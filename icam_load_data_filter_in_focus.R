@@ -1,4 +1,4 @@
-trval<-0.29 #set treshhold value for posotive cells
+rm(list=ls())
 load("data/icamimageandobjectindex.RData")
 #selecting only variables that dealing with focus
 
@@ -6,42 +6,37 @@ perimindallf<-perimindall[,c("ImageNumber","FeatureIdx","InternalIdx","Image_Met
               colnames(perimindall)[grepl("Focus",colnames(perimindall))],
               colnames(perimindall)[grepl("focus",colnames(perimindall))],
               colnames(perimindall)[grepl("LogLogSlope",colnames(perimindall))])]
-LogLogSlope     
 
-perimindallftt<-perimindall[perimindall$Image_Metadata_array>8,]
-
-
-#finding out of focus images
+#plotting log logslopes of all images
 library (ggplot2)
 
-highlight.topo <- 2177
 perobindallfplot <- as.data.frame(perimindallf)
-
+#show were is blamk topo is
+highlight.topo <- 2177
 perobindallfplot$highlight <- ifelse(perobindallfplot$FeatureIdx == highlight.topo, "highlight", "normal")
 textdf <- perobindallfplot[perobindallfplot$FeatureIdx == highlight.topo, ]
 mycolours <- c("highlight" = "red", "normal" = "grey50")
 
-p11<-ggplot(data = perobindallfplot, aes(x = Image_Math_focusa,
-                                         y = Image_Math_focusd)) 
-p11+ geom_point(alpha = 0.4) +geom_density2d()+xlab("log_actin_local_focus_meas")+
-  ylab("log_dapi_local_focus_meas")+ geom_segment(aes(x = -4.2, y = -5, xend = -4.2, yend = 2, colour="red"))+
-  geom_segment(aes(x = -6, y = -2.5, xend = 1, yend = -2.5, colour="red"))
+p11<-ggplot(data = perobindallfplot, aes(x = Image_ImageQuality_PowerLogLogSlope_Actin1Crop,
+                                         y = Image_ImageQuality_PowerLogLogSlope_Dapi1Crop)) 
+p11+ geom_point(alpha = 0.4) +geom_density2d()+xlab("PowerLogLogSlope_Phaloidin")+
+  ylab("PowerLogLogSlope_DAPI")+ geom_segment(aes(x = -1.25, y = -3, xend = -1.25, yend = 0, colour="red"))+
+  geom_segment(aes(y = -1.3, x = -3, yend = -1.3, xend = 0, colour="red"))
 
-# +geom_density2d()+
-#   ylim(0,0.1)+xlim(0,0.0025)
+focim<-perimindallf[perimindallf$Image_ImageQuality_PowerLogLogSlope_Actin1Crop<(-1.25)&
+                      perimindallf$Image_ImageQuality_PowerLogLogSlope_Dapi1Crop<(-1.3),"ImageNumber"]
+length(focim)
+#plotting results
+perobindallfplotinfocus<-perobindallfplot[perobindallfplot$ImageNumber%in%focim,]
+ggplot(data = perobindallfplotinfocus, aes(x = Image_ImageQuality_PowerLogLogSlope_Actin1Crop,
+                                         y = Image_ImageQuality_PowerLogLogSlope_Dapi1Crop))+ 
+geom_point(alpha = 0.4) +geom_density2d()+xlab("PowerLogLogSlope_Phaloidin")+
+  ylab("PowerLogLogSlope_DAPI")
 
-library(hexbin)
-p11+stat_binhex()
-p11+geom_point(alpha = 0.4)
-p11 + geom_point() + geom_density2d()
-# p11+ geom_point(size = 3, aes(colour = highlight)) +
-#   scale_color_manual("Status", values = mycolours) +
-#   geom_text(data = textdf, aes(x = Index1, y = Index2, label = "blank")) +
-#   theme(legend.position = "none") +
-#   theme()
+# finding images with over exposion (in some cases max and min intensity in ICAm is eqaual
+#that image is not suitable for further nanalysis
 
-focim<-perimindallf[perimindallf$Image_Math_focusa>-4.2&perimindallf$Image_Math_focusd>-2.5,"ImageNumber"]
-# finding images without over exposion 
+perimindallftt<-perimindall[perimindall$Image_Metadata_array>8,]
 perimindalltt<-perimindall[perimindall$Image_Metadata_array<9,]
 p12<-ggplot(data = perimindalltt, aes(x = Image_ImageQuality_MinIntensity_Icam1Crop,
                                       y = Image_ImageQuality_MedianIntensity_Icam1Crop)) 
