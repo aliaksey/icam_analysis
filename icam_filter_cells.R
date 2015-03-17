@@ -13,13 +13,18 @@ ggplot(perobindall.cor[perobindall.cor$Image_Metadata_array<9,],
 
 cell.area<-na.omit(perobindall.cor[perobindall.cor$Image_Metadata_array<9,c("ImageNumber", "FeatureIdx", "ObjectNumber",
                                                                     "Cell_AreaShape_Area","Cell_AreaShape_Perimeter",
-                                                                    "Nuclei_AreaShape_Area","Nuclei_AreaShape_Perimeter")])
+                                                                    "Nuclei_AreaShape_Area","Nuclei_AreaShape_Perimeter",
+                                                                    "Cell_AreaShape_Solidity","Cell_AreaShape_Compactness")])
 library(GGally)
 # library(gplots)
 # palette(rev(rich.colors(2177)))
 ggpairs(cell.area,columns=4:7)
 # palette("default")
+##
 cell.area.f<-c()
+library(parallel)
+cluster <- makeCluster(4)
+
 for(i in unique(cell.area[,"FeatureIdx"])){
   temp2<-cell.area[cell.area$FeatureIdx==i,]
   ###filter based on cell area   
@@ -34,6 +39,20 @@ for(i in unique(cell.area[,"FeatureIdx"])){
   iudp<-ubndp-lbndp
   rsltpc<-temp2[temp2[,"Cell_AreaShape_Perimeter"]<(ubndp+1.5*iudp)&
                  temp2[,"Cell_AreaShape_Perimeter"]>(lbndp-1.5*iudp),]
+  
+  ###filter based on cell compactness
+  lbndp<-as.numeric(quantile(temp2[,"Cell_AreaShape_Compactness"], probs = 0.25))
+  ubndp<-as.numeric(quantile(temp2[,"Cell_AreaShape_Compactness"], probs = 0.75))
+  iudp<-ubndp-lbndp
+  rsltcc<-temp2[temp2[,"Cell_AreaShape_Compactness"]<(ubndp+1.5*iudp)&
+                  temp2[,"Cell_AreaShape_Compactness"]>(lbndp-1.5*iudp),]
+  
+  ###filter based on cell solidity
+  lbndp<-as.numeric(quantile(temp2[,"Cell_AreaShape_Solidity"], probs = 0.25))
+  ubndp<-as.numeric(quantile(temp2[,"Cell_AreaShape_Solidity"], probs = 0.75))
+  iudp<-ubndp-lbndp
+  rsltsc<-temp2[temp2[,"Cell_AreaShape_Solidity"]<(ubndp+1.5*iudp)&
+                  temp2[,"Cell_AreaShape_Solidity"]>(lbndp-1.5*iudp),]
   
   ###filter based on nuclei area   
   lbnda<-as.numeric(quantile(temp2[,"Nuclei_AreaShape_Area"], probs = 0.25))
@@ -52,9 +71,12 @@ for(i in unique(cell.area[,"FeatureIdx"])){
   arpr.ftr<-temp2[row.names(temp2) %in% row.names(rsltac)&
                     row.names(temp2) %in% row.names(rsltpc)&
                     row.names(temp2) %in% row.names(rsltan)&
+                    row.names(temp2) %in% row.names(rsltsc)&
+                    row.names(temp2) %in% row.names(rsltcc)&
                     row.names(temp2) %in% row.names(rsltpn),]
   cell.area.f<-rbind(cell.area.f,arpr.ftr) 
 }
+stopCluster(cl)
 cell.area.f<-as.data.frame(cell.area.f)
 cell.area.f$ID<-paste(cell.area.f$ImageNumber,cell.area.f$ObjectNumber,sep="_")
 ##joining filtering results with a data
@@ -91,6 +113,8 @@ cell.area.c$CONID<-paste(cell.area.c$Image_Metadata_array,
                          cell.area.c$Col,sep="_")
 
 cell.area.f.c<-c()
+library(parallel)
+cluster <- makeCluster(4)
 for(i in unique(cell.area.c[,"CONID" ])){
   temp2<-cell.area.c[cell.area.c$CONID==i,]
   ###filter based on cell area   
@@ -105,7 +129,19 @@ for(i in unique(cell.area.c[,"CONID" ])){
   iudp<-ubndp-lbndp
   rsltpc<-temp2[temp2[,"Cell_AreaShape_Perimeter"]<(ubndp+1.5*iudp)&
                   temp2[,"Cell_AreaShape_Perimeter"]>(lbndp-1.5*iudp),]
+  ###filter based on cell compactness
+  lbndp<-as.numeric(quantile(temp2[,"Cell_AreaShape_Compactness"], probs = 0.25))
+  ubndp<-as.numeric(quantile(temp2[,"Cell_AreaShape_Compactness"], probs = 0.75))
+  iudp<-ubndp-lbndp
+  rsltcc<-temp2[temp2[,"Cell_AreaShape_Compactness"]<(ubndp+1.5*iudp)&
+                  temp2[,"Cell_AreaShape_Compactness"]>(lbndp-1.5*iudp),]
   
+  ###filter based on cell solidity
+  lbndp<-as.numeric(quantile(temp2[,"Cell_AreaShape_Solidity"], probs = 0.25))
+  ubndp<-as.numeric(quantile(temp2[,"Cell_AreaShape_Solidity"], probs = 0.75))
+  iudp<-ubndp-lbndp
+  rsltsc<-temp2[temp2[,"Cell_AreaShape_Solidity"]<(ubndp+1.5*iudp)&
+                  temp2[,"Cell_AreaShape_Solidity"]>(lbndp-1.5*iudp),]
   ###filter based on nuclei area   
   lbnda<-as.numeric(quantile(temp2[,"Nuclei_AreaShape_Area"], probs = 0.25))
   ubnda<-as.numeric(quantile(temp2[,"Nuclei_AreaShape_Area"], probs = 0.75))
@@ -123,9 +159,12 @@ for(i in unique(cell.area.c[,"CONID" ])){
   arpr.ftr<-temp2[row.names(temp2) %in% row.names(rsltac)&
                     row.names(temp2) %in% row.names(rsltpc)&
                     row.names(temp2) %in% row.names(rsltan)&
+                    row.names(temp2) %in% row.names(rsltsc)&
+                    row.names(temp2) %in% row.names(rsltcc)&
                     row.names(temp2) %in% row.names(rsltpn),]
   cell.area.f.c<-rbind(cell.area.f.c,arpr.ftr) 
 }
+stopCluster(cl)
 cell.area.f.c<-as.data.frame(cell.area.f.c)
 cell.area.f.c$ID<-paste(cell.area.f.c$ImageNumber,cell.area.f.c$ObjectNumber,sep="_")
 ##joining filtering results with a data
