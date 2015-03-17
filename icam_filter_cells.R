@@ -84,8 +84,15 @@ ggplot(perobindall.cor[perobindall.cor$Image_Metadata_array<9,],
        aes(x=Cell_AreaShape_FormFactor,y=Nuclei_AreaShape_Solidity,colour=Image_Metadata_array))+geom_point()
 #apply these filters for controls
 
-for(i in unique(cell.area[,"FeatureIdx"])){
-  temp2<-cell.area[cell.area$FeatureIdx==i,]
+cell.area.c<-na.omit(perobindall.cor[perobindall.cor$Image_Metadata_array>8,c("ImageNumber","Col","Row", "Image_Metadata_array" , "ObjectNumber",
+                                                                            "Cell_AreaShape_Area","Cell_AreaShape_Perimeter",
+                                                                            "Nuclei_AreaShape_Area","Nuclei_AreaShape_Perimeter")])
+cell.area.c$CONID<-paste(cell.area.c$Image_Metadata_array,
+                         cell.area.c$Col,sep="_")
+
+cell.area.f.c<-c()
+for(i in unique(cell.area.c[,"CONID" ])){
+  temp2<-cell.area.c[cell.area.c$CONID==i,]
   ###filter based on cell area   
   lbnda<-as.numeric(quantile(temp2[,"Cell_AreaShape_Area"], probs = 0.25))
   ubnda<-as.numeric(quantile(temp2[,"Cell_AreaShape_Area"], probs = 0.75))
@@ -117,7 +124,30 @@ for(i in unique(cell.area[,"FeatureIdx"])){
                     row.names(temp2) %in% row.names(rsltpc)&
                     row.names(temp2) %in% row.names(rsltan)&
                     row.names(temp2) %in% row.names(rsltpn),]
-  cell.area.f<-rbind(cell.area.f,arpr.ftr) 
+  cell.area.f.c<-rbind(cell.area.f.c,arpr.ftr) 
 }
+cell.area.f.c<-as.data.frame(cell.area.f.c)
+cell.area.f.c$ID<-paste(cell.area.f.c$ImageNumber,cell.area.f.c$ObjectNumber,sep="_")
+##joining filtering results with a data
 
+perobindall.filter.c<-perobindall.cor[perobindall.cor$ID%in%cell.area.f.c$ID,]
 
+ggplot(perobindall.filter.c[perobindall.filter.c$Image_Metadata_array>8,],
+       aes(x=Cell_AreaShape_Area,y=Cell_AreaShape_Perimeter,colour=Image_Metadata_array))+geom_point()
+
+ggplot(perobindall.filter.c[perobindall.filter.c$Image_Metadata_array>8,],
+       aes(x=Nuclei_AreaShape_Area,y=Nuclei_AreaShape_Perimeter,colour=Image_Metadata_array))+geom_point()
+
+ggplot(perobindall.cor[perobindall.cor$Image_Metadata_array>8,],
+       aes(x=Cell_AreaShape_Area,y=Cell_AreaShape_Perimeter,colour=Image_Metadata_array))+geom_point()
+
+ggplot(perobindall.cor[perobindall.cor$Image_Metadata_array>8,],
+       aes(x=Nuclei_AreaShape_Area,y=Nuclei_AreaShape_Perimeter,colour=Image_Metadata_array))+geom_point()
+
+## joining all data together
+
+perobindall.filter<-rbind(perobindall.filter,perobindall.filter.c)
+##remove objects that have area=0
+perobindall.filter<-perobindall.filter[perobindall.filter$Cell_AreaShape_Area!=0,]
+
+save(perobindall.filter, file="cell_objects_after_area_perimeter.RDATA")
