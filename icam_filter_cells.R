@@ -15,15 +15,16 @@ cell.area<-na.omit(perobindall.cor[perobindall.cor$Image_Metadata_array<9,c("Ima
                                                                     "Cell_AreaShape_Area","Cell_AreaShape_Perimeter",
                                                                     "Nuclei_AreaShape_Area","Nuclei_AreaShape_Perimeter",
                                                                     "Cell_AreaShape_Solidity","Cell_AreaShape_Compactness")])
-library(GGally)
-# library(gplots)
-# palette(rev(rich.colors(2177)))
-ggpairs(cell.area,columns=4:7)
+# library(GGally)
+# # library(gplots)
+# # palette(rev(rich.colors(2177)))
+# ggpairs(cell.area,columns=4:7)
 # palette("default")
 ##
 cell.area.f<-c()
 library(parallel)
-cluster <- makeCluster(4)
+cl <- makeCluster(4)
+registerDoParallel(cl)
 
 for(i in unique(cell.area[,"FeatureIdx"])){
   temp2<-cell.area[cell.area$FeatureIdx==i,]
@@ -77,6 +78,7 @@ for(i in unique(cell.area[,"FeatureIdx"])){
   cell.area.f<-rbind(cell.area.f,arpr.ftr) 
 }
 stopCluster(cl)
+rm(cl)
 cell.area.f<-as.data.frame(cell.area.f)
 cell.area.f$ID<-paste(cell.area.f$ImageNumber,cell.area.f$ObjectNumber,sep="_")
 ##joining filtering results with a data
@@ -93,28 +95,30 @@ ggplot(perobindall.filter[perobindall.filter$Image_Metadata_array<9,],
 
 ##checking with other parameters compactness eccentricity
 ggplot(perobindall.filter[perobindall.filter$Image_Metadata_array<9,],
-       aes(x=Cell_AreaShape_Eccentricity,y=Nuclei_AreaShape_Compactness,colour=Image_Metadata_array))+geom_point()
+       aes(x=Cell_AreaShape_Solidity,y=Nuclei_AreaShape_Compactness,colour=Image_Metadata_array))+geom_point()
 
 ggplot(perobindall.cor[perobindall.cor$Image_Metadata_array<9,],
-       aes(x=Cell_AreaShape_Eccentricity,y=Nuclei_AreaShape_Compactness,colour=Image_Metadata_array))+geom_point()
+       aes(x=Cell_AreaShape_Solidity,y=Nuclei_AreaShape_Compactness,colour=Image_Metadata_array))+geom_point()
 
 ##checking with other parameters formfactor solidity
 ggplot(perobindall.filter[perobindall.filter$Image_Metadata_array<9,],
-       aes(x=Cell_AreaShape_FormFactor,y=Nuclei_AreaShape_Solidity,colour=Image_Metadata_array))+geom_point()
+       aes(x=Cell_AreaShape_FormFactor,y=Nuclei_AreaShape_Eccentricity,colour=Image_Metadata_array))+geom_point()
 
 ggplot(perobindall.cor[perobindall.cor$Image_Metadata_array<9,],
-       aes(x=Cell_AreaShape_FormFactor,y=Nuclei_AreaShape_Solidity,colour=Image_Metadata_array))+geom_point()
+       aes(x=Cell_AreaShape_FormFactor,y=Nuclei_AreaShape_Eccentricity,colour=Image_Metadata_array))+geom_point()
 #apply these filters for controls
 
 cell.area.c<-na.omit(perobindall.cor[perobindall.cor$Image_Metadata_array>8,c("ImageNumber","Col","Row", "Image_Metadata_array" , "ObjectNumber",
                                                                             "Cell_AreaShape_Area","Cell_AreaShape_Perimeter",
-                                                                            "Nuclei_AreaShape_Area","Nuclei_AreaShape_Perimeter")])
+                                                                            "Nuclei_AreaShape_Area","Nuclei_AreaShape_Perimeter",
+                                                                            "Cell_AreaShape_Solidity","Cell_AreaShape_Compactness")])
 cell.area.c$CONID<-paste(cell.area.c$Image_Metadata_array,
                          cell.area.c$Col,sep="_")
 
 cell.area.f.c<-c()
 library(parallel)
-cluster <- makeCluster(4)
+cl <- makeCluster(4)
+registerDoParallel(cl)
 for(i in unique(cell.area.c[,"CONID" ])){
   temp2<-cell.area.c[cell.area.c$CONID==i,]
   ###filter based on cell area   
@@ -165,6 +169,7 @@ for(i in unique(cell.area.c[,"CONID" ])){
   cell.area.f.c<-rbind(cell.area.f.c,arpr.ftr) 
 }
 stopCluster(cl)
+rm(cl)
 cell.area.f.c<-as.data.frame(cell.area.f.c)
 cell.area.f.c$ID<-paste(cell.area.f.c$ImageNumber,cell.area.f.c$ObjectNumber,sep="_")
 ##joining filtering results with a data
