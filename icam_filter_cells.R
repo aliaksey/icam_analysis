@@ -22,9 +22,9 @@ cell.area<-na.omit(perobindall.cor[perobindall.cor$Image_Metadata_array<9,c("Ima
 # palette("default")
 ##
 cell.area.f<-c()
-library(parallel)
-cl <- makeCluster(4)
-registerDoParallel(cl)
+# library(parallel)
+# cl <- makeCluster(4)
+# registerDoParallel(cl)
 
 for(i in unique(cell.area[,"FeatureIdx"])){
   temp2<-cell.area[cell.area$FeatureIdx==i,]
@@ -77,8 +77,8 @@ for(i in unique(cell.area[,"FeatureIdx"])){
                     row.names(temp2) %in% row.names(rsltpn),]
   cell.area.f<-rbind(cell.area.f,arpr.ftr) 
 }
-stopCluster(cl)
-rm(cl)
+# stopCluster(cl)
+# rm(cl)
 cell.area.f<-as.data.frame(cell.area.f)
 cell.area.f$ID<-paste(cell.area.f$ImageNumber,cell.area.f$ObjectNumber,sep="_")
 ##joining filtering results with a data
@@ -116,9 +116,9 @@ cell.area.c$CONID<-paste(cell.area.c$Image_Metadata_array,
                          cell.area.c$Col,sep="_")
 
 cell.area.f.c<-c()
-library(parallel)
-cl <- makeCluster(4)
-registerDoParallel(cl)
+# library(parallel)
+# cl <- makeCluster(4)
+# registerDoParallel(cl)
 for(i in unique(cell.area.c[,"CONID" ])){
   temp2<-cell.area.c[cell.area.c$CONID==i,]
   ###filter based on cell area   
@@ -168,8 +168,8 @@ for(i in unique(cell.area.c[,"CONID" ])){
                     row.names(temp2) %in% row.names(rsltpn),]
   cell.area.f.c<-rbind(cell.area.f.c,arpr.ftr) 
 }
-stopCluster(cl)
-rm(cl)
+# stopCluster(cl)
+# rm(cl)
 cell.area.f.c<-as.data.frame(cell.area.f.c)
 cell.area.f.c$ID<-paste(cell.area.f.c$ImageNumber,cell.area.f.c$ObjectNumber,sep="_")
 ##joining filtering results with a data

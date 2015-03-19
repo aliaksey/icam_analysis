@@ -1,53 +1,76 @@
+rm(list=ls())
 load("Icam_cells_after_correction.RDATA")
 
-______________________________________________________________________________________
-#finding hits based on frequencyies
 #find treshhold factor
-plot(perobiintc$ICAM_Intens_Mean_corr,perobiintc$Cell_AreaShape_Area, )
-colicam=as.factor(perobiintc[perobiintc$Image_Metadata_array>8,"Image_Metadata_array"])
-plot(perobiintc[perobiintc$Image_Metadata_array>8,"ICAM_Intens_Mean_corr"],
-     perobiintc[perobiintc$Image_Metadata_array>8,"Cell_AreaShape_Area"], 
-     col=colicam)
 library(ggplot2)
 library(reshape2)
-forggplot<-perobiintc[perobiintc$Image_Metadata_array>8,c("ICAM_Intens_Mean_corr",
+forggplot<-perobindall.cor[perobindall.cor$Image_Metadata_array>8,c("Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr",
                                                           "Image_Metadata_array")]
-p1<-ggplot(forggplot, aes(ICAM_Intens_Mean_corr, fill = as.factor(forggplot$Image_Metadata_array))) 
+p1<-ggplot(forggplot, aes(Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr, fill = as.factor(forggplot$Image_Metadata_array))) 
 p1+geom_density(alpha = 0.2)
 
-p2<-ggplot(perobiintc, aes(ICAM_Intens_Mean_corr, fill = as.factor(perobiintc$Image_Metadata_array))) 
+p2<-ggplot(perobindall.cor, aes(Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr, fill = as.factor(perobindall.cor$Image_Metadata_array))) 
 p2+geom_density(alpha = 0.2)
 
+top_int_data<-perobindall.cor[perobindall.cor$Image_Metadata_array<9,"Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr"]
+pos_int_data<-perobindall.cor[perobindall.cor$Image_Metadata_array==9,"Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr"]
+neg_int_data<-perobindall.cor[perobindall.cor$Image_Metadata_array==10,"Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr"]
 
-hist(perobiintc[perobiintc$Image_Metadata_array>8,"ICAM_Intens_Mean_corr"])
-dd<-density(perobiintc[perobiintc$Image_Metadata_array>8,"ICAM_Intens_Mean_corr"])
+lower.limit <- 1
+upper.limit <- 50
+
+neg.density <- density(neg_int_data, from = lower.limit, to = upper.limit, n = max(length(neg_int_data),
+                                                                                   length(pos_int_data)))
+pos.density <- density(pos_int_data, from = lower.limit, to = upper.limit, n = max(length(neg_int_data),
+                                                                                   length(pos_int_data)))
+
+density.difference <- neg.density$y - pos.density$y
+intersection.point <- neg.density$x[which(diff(density.difference > 0) != 0) + 1]
+
+combined<-perobindall.cor[perobindall.cor$Image_Metadata_array>8,c("Image_Metadata_array",
+                  "Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr")]
+
+
+ggplot(combined, aes(Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr, fill =as.factor(Image_Metadata_array))) +
+  geom_density(alpha = 0.2) + 
+  geom_vline(xintercept = intersection.point, color = "red")
+
+
+
+##find point of intersection
+unique(intersect(neg_int_data, pos_int_data))
+
+neg_int_data[abs(neg_int_data-pos_int_data) < 0.00001 && neg_int_dataneg_int_data < 1000 && neg_int_data > 500]
+
+hist(perobindall.cor[perobindall.cor$Image_Metadata_array>8,"Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr"])
+dd<-density(perobindall.cor[perobindall.cor$Image_Metadata_array>8,"Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr"])
 plot(dd)
 
-boxplot(perobiintc[perobiintc$ICAM_Intens_Mean_corr > 10,
-                   "ICAM_Intens_Mean_corr"]~
-          perobiintc[perobiintc$ICAM_Intens_Mean_corr > 10, "Image_Metadata_array"])
+boxplot(perobindall.cor[perobindall.cor$Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr > 10,
+                   "Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr"]~
+          perobindall.cor[perobindall.cor$Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr > 10, "Image_Metadata_array"])
 ###############################################################
 #################################################################
 #count number of postitive cells
 
-perobiintct<-perobiintc[perobiintc$Image_Metadata_array<9,]
-perobiintcp<-perobiintc[perobiintc$Image_Metadata_array==9,]
-perobiintcn<-perobiintc[perobiintc$Image_Metadata_array==10,]
+perobindall.cort<-perobindall.cor[perobindall.cor$Image_Metadata_array<9,]
+perobindall.corp<-perobindall.cor[perobindall.cor$Image_Metadata_array==9,]
+perobindall.corn<-perobindall.cor[perobindall.cor$Image_Metadata_array==10,]
 #making some plots
-plot(perobiintcn$Actin_Intens_Mean_corr,
-     perobiintcn$ICAM_Intens_Mean_corr)
+plot(perobindall.corn$Cell_Intensity_MeanIntensity_Actin1amask_Nor_corr,
+     perobindall.corn$Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr)
 
 library(plyr)
-ratiorankcorr<-ddply(perobiintct,"ImageNumber", summarise, 
-                     IcamPositive=sum(ICAM_Intens_Mean_corr > 10),
-                     Total=sum(ICAM_Intens_Mean_corr > 0),
-                     TrMeanIcam=mean(ICAM_Intens_Mean_corr, trimm=0.3),
+ratiorankcorr<-ddply(perobindall.cort,"ImageNumber", summarise, 
+                     IcamPositive=sum(Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr > 10),
+                     Total=sum(Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr > 0),
+                     TrMeanIcam=mean(Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr, trimm=0.3),
                      FeatureIdx=mean(FeatureIdx))
 
-ratiorankcorrn<-ddply(perobiintcn,"ImageNumber", summarise, 
-                      IcamPositive=sum(ICAM_Intens_Mean_corr > 10),
-                      Total=sum(ICAM_Intens_Mean_corr > 0),
-                      TrMeanIcam=mean(ICAM_Intens_Mean_corr, trimm=0.3),
+ratiorankcorrn<-ddply(perobindall.corn,"ImageNumber", summarise, 
+                      IcamPositive=sum(Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr > 10),
+                      Total=sum(Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr > 0),
+                      TrMeanIcam=mean(Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr, trimm=0.3),
                       FeatureIdx=mean(FeatureIdx))
 #plot(ratiorankcorr$IcamPositive~ratiorankcorr$FeatureIdx)
 
@@ -72,8 +95,8 @@ for (i in 1:length(unique(ratiorankcorrfff[,"FeatureIdx"]))){
   temp <- ratiorankcorr[ratiorankcorr$FeatureIdx==ratiorankcorrfff[i,"FeatureIdx"],]
   #temp2<-perobindallfnt[perobindallfnt$FeatureIdx==collobfeat[i,"FeatureIdx"],]
   obs<-c(sum(temp[,"IcamPositive"]),(sum(temp[,"Total"])-sum(temp[,"IcamPositive"])))
-  exp<-c(sum(perobiintcn$ICAM_Intens_Mean_corr >10)/length(perobiintcn$ICAM_Intens_Mean_corr),
-         sum(perobiintcn$ICAM_Intens_Mean_corr<10)/length(perobiintcn$ICAM_Intens_Mean_corr))
+  exp<-c(sum(perobindall.corn$Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr >10)/length(perobindall.corn$Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr),
+         sum(perobindall.corn$Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr<10)/length(perobindall.corn$Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr))
   pva<-chisq.test(obs,p=exp)
   #wilcox.test(temp[,"IcamIntensityMt"],collob[,"IcamIntensityMt"] )
   #pvak<-kruskal.test(Cell_Intensity_MedianIntensity_Icam1amask~ImageNumber,data=temp2)
@@ -94,24 +117,24 @@ topicam<-rankration[c(2157:2177),"FeatureIdx"]
 bottomicam<-rankration[c(1:20),"FeatureIdx"]
 # plotting intensities for actin and icam
 library(ggplot2)
-dataicamav<-aggregate(perobiintct[,c("FeatureIdx", "ImageNumber", "Actin_Intens_Mean_corr", 
-                                     "ICAM_Intens_Mean_corr")], by=list(perobiintct$ImageNumber),
+dataicamav<-aggregate(perobindall.cort[,c("FeatureIdx", "ImageNumber", "Cell_Intensity_MeanIntensity_Actin1amask_Nor_corr", 
+                                     "Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr")], by=list(perobindall.cort$ImageNumber),
                       FUN=function(x) mean(x, trim=0.2, na.action = na.omit))
 
 topicamm<-dataicamav[dataicamav$FeatureIdx%in%topicam,]
 bottomicamm<-dataicamav[dataicamav$FeatureIdx%in%bottomicam,]
 forplotcoll<-rbind(topicamm,bottomicamm)
-forplotcoll<-forplotcoll[order(forplotcoll$ICAM_Intens_Mean_corr),]
+forplotcoll<-forplotcoll[order(forplotcoll$Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr),]
 
-plot(forplotcoll$Actin_Intens_Mean_corr,forplotcoll$ICAM_Intens_Mean_corr)
-cor.test(forplotcoll$Actin_Intens_Mean_corr,forplotcoll$ICAM_Intens_Mean_corr)
+plot(forplotcoll$Cell_Intensity_MeanIntensity_Actin1amask_Nor_corr,forplotcoll$Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr)
+cor.test(forplotcoll$Cell_Intensity_MeanIntensity_Actin1amask_Nor_corr,forplotcoll$Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr)
 
 #plot all evrything without dots by mean
-forplottransf <- transform(forplotcoll[,c("FeatureIdx", "Actin_Intens_Mean_corr","ICAM_Intens_Mean_corr") ], FeatureIdx = factor(FeatureIdx, 
+forplottransf <- transform(forplotcoll[,c("FeatureIdx", "Cell_Intensity_MeanIntensity_Actin1amask_Nor_corr","Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr") ], FeatureIdx = factor(FeatureIdx, 
                                                                                                                                  levels = as.character(forplotcoll$FeatureIdx)))
 library(reshape2)
-forplottransfmelt<-melt(forplottransf, measure.vars =c("ICAM_Intens_Mean_corr",
-                                                       "Actin_Intens_Mean_corr"))
+forplottransfmelt<-melt(forplottransf, measure.vars =c("Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr",
+                                                       "Cell_Intensity_MeanIntensity_Actin1amask_Nor_corr"))
 #forplottransfmelt<-melt(forplottransf, measure.vars ="IcamIntensityMt")
 p91<- ggplot(forplottransfmelt, aes(FeatureIdx, y = value, fill=variable))
 p91+geom_boxplot()+theme(legend.position="none")+ylim(-0.5,10)
@@ -209,16 +232,16 @@ ________________________________________________________________________________
 #calculating hits based on intensities
 _______________________________________________________________________________
 library(plyr) #at the beginning I used o.3 as trimmed mean coef 
-icamintim<-ddply(perobiintct,"ImageNumber", summarise,  
+icamintim<-ddply(perobindall.cort,"ImageNumber", summarise,  
                  FeatureIdx=mean(FeatureIdx),
                  IcamIntensityMeanmed=mean(ICAM_Intens_Median_corr,trim=0.2),
                  IcamIntensityMedmed=median(ICAM_Intens_Median_corr),
                  ActinIntensityMeanmed=mean(Actin_Intens_Median_corr,trim=0.2),
                  ActinIntensityMedmed=median(Actin_Intens_Median_corr),
-                 IcamIntensityMeanmean=mean(ICAM_Intens_Mean_corr,trim=0.2),
-                 IcamIntensityMedmmean=median(ICAM_Intens_Mean_corr),
-                 ActinIntensityMeanmean=mean(Actin_Intens_Mean_corr,trim=0.2),
-                 ActinIntensityMedmean=median(Actin_Intens_Mean_corr),
+                 IcamIntensityMeanmean=mean(Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr,trim=0.2),
+                 IcamIntensityMedmmean=median(Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr),
+                 ActinIntensityMeanmean=mean(Cell_Intensity_MeanIntensity_Actin1amask_Nor_corr,trim=0.2),
+                 ActinIntensityMedmean=median(Cell_Intensity_MeanIntensity_Actin1amask_Nor_corr),
                  Array=mean(Image_Metadata_array))
 # icamintft<-na.omit(ddply(icamintim,"FeatureIdx", summarise, 
 #                              IcamIntensityMtf=mean(),
@@ -396,3 +419,4 @@ forplottransfmeltint<-melt(forplottransfint, measure.vars = "IcamINtegratedInt")
 p9991<- ggplot(forplottransfmeltint, aes(FeatureIdx, y = value, fill=variable))
 p9991+geom_boxplot()+theme(legend.position="none")
 #theme(axis.text.x=element_text(angle=-90, vjust=0.4,hjust=1)) 
+

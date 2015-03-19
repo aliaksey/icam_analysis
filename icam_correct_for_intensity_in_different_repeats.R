@@ -220,7 +220,7 @@ perobindall.cor.temp1<-na.omit(perobindall.filter[,c("Cell_Intensity_IntegratedI
     colnames( perobindall.filter)[!grepl("_Intensity_", colnames( perobindall.filter))])])
 perobindall.cor.temp1$ID<-paste(perobindall.cor.temp1$ImageNumber,perobindall.cor.temp1$ObjectNumber,sep="_")
 
-perobindall.cor.temp2<-perobiintc[,c("ImageNumber","ObjectNumber",colnames(perobiintc)[grepl("_Nor_", 
+perobindall.cor.temp2<-perobiintc[,c("ImageNumber","ObjectNumber",colnames(perobiintc)[grepl("_Nor", 
                     colnames(perobiintc))])]
 perobindall.cor.temp2$ID<-paste(perobindall.cor.temp2$ImageNumber,perobindall.cor.temp2$ObjectNumber,sep="_")
 perobindall.cor.temp2<-perobindall.cor.temp2[,!colnames(perobindall.cor.temp2)%in%c("ImageNumber","ObjectNumber")]
