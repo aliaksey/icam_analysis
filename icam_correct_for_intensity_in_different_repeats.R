@@ -188,4 +188,7 @@ ggplot(perobiintc,aes(factor(Image_Metadata_array), Cell_Intensity_IntegratedInt
                      fill=factor(Image_Metadata_array)))+geom_boxplot()
 
 #save results
-x<-perobindall.filter
+perobindall.cor<-na.omit(merge(na.omit(perobindall.filter[,colnames( perobindall.filter)[!grepl("_Intensity_", 
+              colnames( perobindall.filter))]]),perobiintc[,c("ImageNumber",colnames(perobiintc)[!grepl("_Nor_", 
+                                   colnames(perobiintc))])],by="ImageNumber"))
+save(perobindall.cor,file="Icam_cells_after_correction.RDATA")
