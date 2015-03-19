@@ -23,7 +23,7 @@ perobiint<-na.omit(merge(perimindall.cor[,c("InternalIdx","FeatureIdx","UnitIdx"
                                                                     colnames(perimindall.cor))|grepl(
                                                                       "Image_ImageQuality_",
                                                                     colnames(perimindall.cor))])],
-                         perobindall.filter[,c("ImageNumber","Cell_AreaShape_Area", colnames( perobindall.filter)[grepl("_Intensity_",
+                         perobindall.filter[,c("ImageNumber","Cell_AreaShape_Area","ObjectNumber", colnames( perobindall.filter)[grepl("_Intensity_",
                          colnames( perobindall.filter))])], by="ImageNumber", all.x=T))
 ##make sevearl checkups
 library(ggplot2)
@@ -102,31 +102,54 @@ for(i in 1:10){
     temp<-perobiint[perobiint$Image_Metadata_array==i,]
     # for ICAM correction
     #mean
-    temp$corrfct<- mean(perobiint[perobiint$Image_Metadata_array<9,"Cell_Intensity_MeanIntensity_Icam1amask_Nor"], trim = 0.2)/
-      mean(temp$Cell_Intensity_MeanIntensity_Icam1amask_Nor, trim=0.2)
+    temp$corrfct<-(mean(c(median(perobiint[perobiint$Image_Metadata_array==1,"Cell_Intensity_MeanIntensity_Icam1amask_Nor"]),
+                        median(perobiint[perobiint$Image_Metadata_array==2,"Cell_Intensity_MeanIntensity_Icam1amask_Nor"]),
+                        median(perobiint[perobiint$Image_Metadata_array==3,"Cell_Intensity_MeanIntensity_Icam1amask_Nor"]))))/
+      median(temp$Cell_Intensity_MeanIntensity_Icam1amask_Nor)
+    
     temp$Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr<-temp$Cell_Intensity_MeanIntensity_Icam1amask_Nor*temp$corrfct*255
+    
     #median
-    temp$corrfctmd<- mean(perobiint[perobiint$Image_Metadata_array<9,"Cell_Intensity_MedianIntensity_Icam1amask_Nor"], trim = 0.2)/
-      mean(temp$Cell_Intensity_MedianIntensity_Icam1amask_Nor, trim=0.2)
+    temp$corrfctmd<- (mean(c(median(perobiint[perobiint$Image_Metadata_array==1,"Cell_Intensity_MedianIntensity_Icam1amask_Nor"]),
+                             median(perobiint[perobiint$Image_Metadata_array==2,"Cell_Intensity_MedianIntensity_Icam1amask_Nor"]),
+                             median(perobiint[perobiint$Image_Metadata_array==3,"Cell_Intensity_MedianIntensity_Icam1amask_Nor"]))))/
+      median(temp$Cell_Intensity_MedianIntensity_Icam1amask_Nor)
+    
     temp$Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr<-temp$Cell_Intensity_MedianIntensity_Icam1amask_Nor*temp$corrfctmd*255
+    
     #Integrated
-    temp$corrfctint<- mean(perobiint[perobiint$Image_Metadata_array<9,"Cell_Intensity_IntegratedIntensity_Icam1amask_Nor"], trim = 0.2)/
-      mean(temp$Cell_Intensity_IntegratedIntensity_Icam1amask_Nor, trim=0.2)
+    temp$corrfctint<- (mean(c(median(perobiint[perobiint$Image_Metadata_array==1,"Cell_Intensity_IntegratedIntensity_Icam1amask_Nor"]),
+                              median(perobiint[perobiint$Image_Metadata_array==2,"Cell_Intensity_IntegratedIntensity_Icam1amask_Nor"]),
+                              median(perobiint[perobiint$Image_Metadata_array==3,"Cell_Intensity_IntegratedIntensity_Icam1amask_Nor"]))))/
+      median(temp$Cell_Intensity_IntegratedIntensity_Icam1amask_Nor)
+    
     temp$Cell_Intensity_IntegratedIntensity_Icam1amask_Nor_corr<-temp$Cell_Intensity_IntegratedIntensity_Icam1amask_Nor*temp$corrfctint*255
     
     # for Actin correction
     #mean
-    temp$corrfcta<- mean(perobiint[perobiint$Image_Metadata_array<9,"Cell_Intensity_MeanIntensity_Actin1amask_Nor"], trim = 0.2)/
-      mean(temp$Cell_Intensity_MeanIntensity_Actin1amask_Nor, trim=0.2)
+    temp$corrfcta<-(mean(c(median(perobiint[perobiint$Image_Metadata_array==1,"Cell_Intensity_MeanIntensity_Actin1amask_Nor"]),
+                          median(perobiint[perobiint$Image_Metadata_array==2,"Cell_Intensity_MeanIntensity_Actin1amask_Nor"]),
+                          median(perobiint[perobiint$Image_Metadata_array==3,"Cell_Intensity_MeanIntensity_Actin1amask_Nor"]))))/
+      median(temp$Cell_Intensity_MeanIntensity_Actin1amask_Nor)
+    
     temp$Cell_Intensity_MeanIntensity_Actin1amask_Nor_corr<-temp$Cell_Intensity_MeanIntensity_Actin1amask_Nor*temp$corrfcta*255
+    
     #median
-    temp$corrfctmda<- mean(perobiint[perobiint$Image_Metadata_array<9,"Cell_Intensity_MedianIntensity_Actin1amask_Nor"], trim = 0.2)/
-      mean(temp$Cell_Intensity_MedianIntensity_Actin1amask_Nor, trim=0.2)
+    temp$corrfctmda<- (mean(c(median(perobiint[perobiint$Image_Metadata_array==1,"Cell_Intensity_MedianIntensity_Actin1amask_Nor"]),
+                             median(perobiint[perobiint$Image_Metadata_array==2,"Cell_Intensity_MedianIntensity_Actin1amask_Nor"]),
+                             median(perobiint[perobiint$Image_Metadata_array==3,"Cell_Intensity_MedianIntensity_Actin1amask_Nor"]))))/
+      median(temp$Cell_Intensity_MedianIntensity_Actin1amask_Nor)
+    
     temp$Cell_Intensity_MedianIntensity_Actin1amask_Nor_corr<-temp$Cell_Intensity_MedianIntensity_Actin1amask_Nor*temp$corrfctmda*255
+    
     #Integrated
-    temp$corrfctinta<- mean(perobiint[perobiint$Image_Metadata_array<9,"Cell_Intensity_IntegratedIntensity_Actin1amask_Nor"], trim = 0.2)/
-      mean(temp$Cell_Intensity_IntegratedIntensity_Actin1amask_Nor, trim=0.2)
+    temp$corrfctinta<- (mean(c(median(perobiint[perobiint$Image_Metadata_array==1,"Cell_Intensity_IntegratedIntensity_Actin1amask_Nor"]),
+                              median(perobiint[perobiint$Image_Metadata_array==2,"Cell_Intensity_IntegratedIntensity_Actin1amask_Nor"]),
+                              median(perobiint[perobiint$Image_Metadata_array==3,"Cell_Intensity_IntegratedIntensity_Actin1amask_Nor"]))))/
+      median(temp$Cell_Intensity_IntegratedIntensity_Actin1amask_Nor)
+    
     temp$Cell_Intensity_IntegratedIntensity_Actin1amask_Nor_corr<-temp$Cell_Intensity_IntegratedIntensity_Actin1amask_Nor*temp$corrfctinta*255
+    
     
   }else{
     temp<-perobiint[perobiint$Image_Metadata_array==i,]
@@ -188,7 +211,27 @@ ggplot(perobiintc,aes(factor(Image_Metadata_array), Cell_Intensity_IntegratedInt
                      fill=factor(Image_Metadata_array)))+geom_boxplot()
 
 #save results
-perobindall.cor<-na.omit(merge(na.omit(perobindall.filter[,colnames( perobindall.filter)[!grepl("_Intensity_", 
-              colnames( perobindall.filter))]]),perobiintc[,c("ImageNumber",colnames(perobiintc)[!grepl("_Nor_", 
-                                   colnames(perobiintc))])],by="ImageNumber"))
+library(data.table)
+
+perobindall.cor.temp1<-na.omit(perobindall.filter[,c("Cell_Intensity_IntegratedIntensity_Actin1amask",
+    "Cell_Intensity_MedianIntensity_Actin1amask","Cell_Intensity_MeanIntensity_Actin1amask",
+           "Cell_Intensity_IntegratedIntensity_Icam1amask",
+        "Cell_Intensity_MedianIntensity_Icam1amask","Cell_Intensity_MeanIntensity_Icam1amask",      
+    colnames( perobindall.filter)[!grepl("_Intensity_", colnames( perobindall.filter))])])
+perobindall.cor.temp1$ID<-paste(perobindall.cor.temp1$ImageNumber,perobindall.cor.temp1$ObjectNumber,sep="_")
+
+perobindall.cor.temp2<-perobiintc[,c("ImageNumber","ObjectNumber",colnames(perobiintc)[grepl("_Nor_", 
+                    colnames(perobiintc))])]
+perobindall.cor.temp2$ID<-paste(perobindall.cor.temp2$ImageNumber,perobindall.cor.temp2$ObjectNumber,sep="_")
+perobindall.cor.temp2<-perobindall.cor.temp2[,!colnames(perobindall.cor.temp2)%in%c("ImageNumber","ObjectNumber")]
+
+#perform some checks
+length(unique(perobindall.cor.temp1$ID))
+length(unique(perobindall.cor.temp2$ID))
+intersect(colnames(perobindall.cor.temp1),colnames(perobindall.cor.temp2))
+
+perobindall.cor<-merge(perobindall.cor.temp1, perobindall.cor.temp2, by="ID")
+##fixing colnames
+#colnames(perobindall.cor)<-gsub("")
+
 save(perobindall.cor,file="Icam_cells_after_correction.RDATA")
