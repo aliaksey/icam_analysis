@@ -146,6 +146,7 @@ ratiorankcorrn<-ddply(neg_int_data.median,"ImageNumber", summarise,
                       TrMeanIcam=mean(Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr, trimm=0.3),
                       FeatureIdx=unique(FeatureIdx))
 ratiorankcorr$Ratio<-ratiorankcorr$IcamPositive/ratiorankcorr$Total
+ratiorankcorrn$Ratio<-ratiorankcorrn$IcamPositive/ratiorankcorrn$Total
 
 ggplot(ratiorankcorr,aes(x=Ratio,y=TrMeanIcam,colour=as.factor(FeatureIdx)))+geom_point(show_guide = FALSE)
 
@@ -158,9 +159,34 @@ ratiorankcorrfff<-ddply(na.omit(ratiorankcorr),"FeatureIdx", summarise,
                         RatioSd=sd(Ratio),
                         RatioMad=mad(Ratio))
 
+ratiorankcorrfffsm<-ratiorankcorrfff[order(ratiorankcorrfff$RatioMedian),]
+
+ggplot(ratiorankcorrfffsm,aes(x=Featureidx<-c(1:2177),y=RatioMedian,colour=as.factor(FeatureIdx)))+
+  geom_point(show_guide = FALSE)+ geom_hline(yintercept = mean(ratiorankcorrn$Ratio), color = "red")+
+  ggtitle("Rattio of ICAm positive cells per topounit/calculated from Median")
+
 ratiorankcorrfffs<-ratiorankcorrfff[order(ratiorankcorrfff$RatioTrMean),]
 
-ggplot(ratiorankcorrfffs,aes(x=c(1:2177),y=RatioTrMean,colour=as.factor(FeatureIdx)))+geom_point(show_guide = FALSE)
+ggplot(ratiorankcorrfffs,aes(x=Featureidx<-c(1:2177),y=RatioTrMean,colour=as.factor(FeatureIdx)))+
+  geom_point(show_guide = FALSE)+ geom_hline(yintercept = mean(ratiorankcorrn$Ratio), color = "red")+
+  ggtitle("Rattio of ICAm positive cells per topounit/calculated from Mean")
+
+ggplot(ratiorankcorrfffs,aes(x=Featureidx<-c(1:2177),y=IntensTrMean,colour=as.factor(FeatureIdx)))+
+  geom_point(show_guide = FALSE)+ geom_hline(yintercept = mean(ratiorankcorrn$TrMeanIcam), color = "red")+
+  ggtitle("ICAM Intensities  per topounit/sorted by persentage of positive")
+
+ratiorankcorrfffsi<-ratiorankcorrfff[order(ratiorankcorrfff$IntensTrMean),]
+
+ggplot(ratiorankcorrfffsi,aes(x=Featureidx<-c(1:2177),y=IntensTrMean,colour=as.factor(FeatureIdx)))+
+  geom_point(show_guide = FALSE)+ geom_hline(yintercept = mean(ratiorankcorrn$TrMeanIcam), color = "red")+
+  ggtitle("ICAM Intensities  per topounit/sorted by mean intensity")
+
+
+
+
+#############################################
+
+
 #stopped here
 #calculating statistics
 for (i in 1:length(unique(ratiorankcorrfff[,"FeatureIdx"]))){ 
