@@ -102,7 +102,8 @@ int_data.topochip<-perobindall.cor[perobindall.cor$Image_Metadata_array<12,
         "Image_Metadata_array")]
 library(reshape2)
 int_data.topochip.melt<-melt(int_data.topochip,measure.vars =c("Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr",
-#mean                                                               "Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr"))
+                                "Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr"))
+#mean                                                              
 ggplot(int_data.topochip.melt, aes(as.factor(variable),y=value,fill=as.factor(Image_Metadata_array))) + 
   geom_boxplot()+ scale_y_log10()+ geom_hline(yintercept = intersection.point.mean, color = "red")+
   ggtitle("Mean Icam expression")
