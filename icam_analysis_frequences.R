@@ -272,6 +272,7 @@ ggplot(ratiorankcorrafffsi,aes(IntensTrMean,fill="yellow"))+geom_density(alpha=.
 #############################################
 
 #calculating statistics
+
 for (i in 1:length(unique(ratiorankcorrfff[,"FeatureIdx"]))){ 
   temp <- ratiorankcorr[ratiorankcorr$FeatureIdx==ratiorankcorrfff[i,"FeatureIdx"],]
   #temp2<-perobindallfnt[perobindallfnt$FeatureIdx==collobfeat[i,"FeatureIdx"],]
@@ -289,38 +290,52 @@ for (i in 1:length(unique(ratiorankcorrfff[,"FeatureIdx"]))){
   #                   "Cell_Intensity_MedianIntensity_Icam1amask"], 
   #    perobindallfnt$Cell_Intensity_MedianIntensity_Icam1amask)
 }
-
-rankration<-ratiorankcorrfff[order(ratiorankcorrfff$RatioTrMean,
-                                   ratiorankcorrfff$RatioSd),c("FeatureIdx","RatioTrMean")]
+sorted.pvalue<-ratiorankcorrfff[order(ratiorankcorrfff$p.value),]
+ggplot(sorted.pvalue,aes(Featureidx<-c(1:2177),p.value))+geom_point()+geom_hline(yintercept=0.05,colour="red")+
+  geom_hline(yintercept=0.05/2177,colour="blue")
+ggplot(sorted.pvalue,aes(Featureidx<-c(1:2177),p.value))+geom_point()+geom_hline(yintercept=0.05,colour="red")+
+  geom_hline(yintercept=0.05/2177,colour="blue")+ylim(0,0.05/2000)
+length(ratiorankcorrfff[ratiorankcorrfff$p.value<(0.05/2177),"p.value"])
+##select only surfaces that passess p value + correction
+pv.corrected<-0.05/2177
+ratiorankcorrfff.pv<-ratiorankcorrfff[ratiorankcorrfff$p.value<pv.corrected,]
+rankration<-ratiorankcorrfff.pv[order(ratiorankcorrfff.pv$RatioTrMean,
+                                      ratiorankcorrfff.pv$RatioSd),c("FeatureIdx","RatioTrMean")]
 # count total number of 
-#checking do we have any surfaces prepared
-topicam<-rankration[c(2157:2177),"FeatureIdx"]
-bottomicam<-rankration[c(1:20),"FeatureIdx"]
+
+topicam<-head(rankration, n=20)$FeatureIdx
+bottomicam<-tail(rankration, n=20)$FeatureIdx
+##########!!!!!!!!!!!!!!!!!!!!!!!!include also plot with frequences
 # plotting intensities for actin and icam
 library(ggplot2)
-dataicamav<-aggregate(perobindall.cort[,c("FeatureIdx", "ImageNumber", "Cell_Intensity_MeanIntensity_Actin1amask_Nor_corr", 
-                                     "Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr")], by=list(perobindall.cort$ImageNumber),
-                      FUN=function(x) mean(x, trim=0.2, na.action = na.omit))
+dataicamav<-aggregate(perobindall.cor[perobindall.cor$Image_Metadata_array<9,c("FeatureIdx", "ImageNumber",
+                                        "Cell_Intensity_MedianIntensity_Actin1amask_Nor_corr", 
+                "Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr")], 
+                by=list(perobindall.cor[perobindall.cor$Image_Metadata_array<9,
+                                                                                                "ImageNumber"]),
+                      FUN=function(x) mean(x, trim=0,15, na.action = na.omit))
 
 topicamm<-dataicamav[dataicamav$FeatureIdx%in%topicam,]
 bottomicamm<-dataicamav[dataicamav$FeatureIdx%in%bottomicam,]
 forplotcoll<-rbind(topicamm,bottomicamm)
-forplotcoll<-forplotcoll[order(forplotcoll$Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr),]
+forplotcoll<-forplotcoll[order(forplotcoll$Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr),]
 
-plot(forplotcoll$Cell_Intensity_MeanIntensity_Actin1amask_Nor_corr,forplotcoll$Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr)
-cor.test(forplotcoll$Cell_Intensity_MeanIntensity_Actin1amask_Nor_corr,forplotcoll$Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr)
+plot(forplotcoll$Cell_Intensity_MedianIntensity_Actin1amask_Nor_corr,forplotcoll$Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr)
+cor.test(forplotcoll$Cell_Intensity_MedianIntensity_Actin1amask_Nor_corr,forplotcoll$Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr)
+plot(forplotcoll$Cell_Intensity_MedianIntensity_Actin1amask_Nor_corr,forplotcoll$Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr)
 
 #plot all evrything without dots by mean
-forplottransf <- transform(forplotcoll[,c("FeatureIdx", "Cell_Intensity_MeanIntensity_Actin1amask_Nor_corr","Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr") ], FeatureIdx = factor(FeatureIdx, 
+forplottransf <- transform(forplotcoll[,c("FeatureIdx", "Cell_Intensity_MedianIntensity_Actin1amask_Nor_corr",
+                    "Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr") ], FeatureIdx = factor(FeatureIdx, 
                                                                                                                                  levels = as.character(forplotcoll$FeatureIdx)))
 library(reshape2)
-forplottransfmelt<-melt(forplottransf, measure.vars =c("Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr",
-                                                       "Cell_Intensity_MeanIntensity_Actin1amask_Nor_corr"))
+forplottransfmelt<-melt(forplottransf, measure.vars =c("Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr",
+                                                       "Cell_Intensity_MedianIntensity_Actin1amask_Nor_corr"))
 #forplottransfmelt<-melt(forplottransf, measure.vars ="IcamIntensityMt")
 p91<- ggplot(forplottransfmelt, aes(FeatureIdx, y = value, fill=variable))
 p91+geom_boxplot()+theme(legend.position="none")+ylim(-0.5,10)
 
-
+##############################here plot for frequences thi is more relevant
 
 
 topwellsurf<-read.csv(file ="F:/Alex/ICAM_validation/script/topowellfeat.csv")
