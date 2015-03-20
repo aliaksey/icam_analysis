@@ -124,7 +124,9 @@ ggplot(int_data.topochip.melt[int_data.topochip.melt$value>intersection.point.me
 
 ###############################################################
 #################################################################
-#count number of postitive cells
+##ICAM analysis
+
+#count number of postitive cells, with ICAm expression higher then treshhold
 
 top_int_data.median<-perobindall.cor[perobindall.cor$Image_Metadata_array<9,
       c("Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr","ImageNumber","FeatureIdx")]
@@ -138,13 +140,13 @@ library(plyr)
 ratiorankcorr<-ddply(top_int_data.median,"ImageNumber", summarise, 
                      IcamPositive=sum(Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr > intersection.point.median),
                      Total=sum(Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr > 0),
-                     TrMeanIcam=mean(Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr, trimm=0.3),
+                     TrMeanIcam=mean(Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr, trimm=0.15),
                      FeatureIdx=unique(FeatureIdx))
 
 ratiorankcorrn<-ddply(neg_int_data.median,"ImageNumber", summarise, 
                       IcamPositive=sum(Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr > intersection.point.median),
                       Total=sum(Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr > 0),
-                      TrMeanIcam=mean(Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr, trimm=0.3),
+                      TrMeanIcam=mean(Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr, trimm=0.15),
                       FeatureIdx=unique(FeatureIdx))
 ratiorankcorr$Ratio<-ratiorankcorr$IcamPositive/ratiorankcorr$Total
 ratiorankcorrn$Ratio<-ratiorankcorrn$IcamPositive/ratiorankcorrn$Total
@@ -153,6 +155,8 @@ ggplot(ratiorankcorr,aes(x=Ratio,y=TrMeanIcam,colour=as.factor(FeatureIdx)))+geo
 
 #collapse to feaature nuber
 ratiorankcorrfff<-ddply(na.omit(ratiorankcorr),"FeatureIdx", summarise, 
+                        IcamPos=sum(IcamPositive),
+                        Totalc=sum(Total),
                         RatioTrMean=mean(Ratio),
                         RatioMedian=median(Ratio),
                         IntensTrMean=mean(TrMeanIcam),
@@ -160,6 +164,7 @@ ratiorankcorrfff<-ddply(na.omit(ratiorankcorr),"FeatureIdx", summarise,
                         RatioSd=sd(Ratio),
                         RatioMad=mad(Ratio))
 
+ratiorankcorrfff$RatioAbs<-ratiorankcorrfff$IcamPos/ratiorankcorrfff$Totalc
 ratiorankcorrfffsm<-ratiorankcorrfff[order(ratiorankcorrfff$RatioMedian),]
 
 ggplot(ratiorankcorrfffsm,aes(x=Featureidx<-c(1:2177),y=RatioMedian,colour=as.factor(FeatureIdx)))+
@@ -168,10 +173,59 @@ ggplot(ratiorankcorrfffsm,aes(x=Featureidx<-c(1:2177),y=RatioMedian,colour=as.fa
 
 ratiorankcorrfffs<-ratiorankcorrfff[order(ratiorankcorrfff$RatioTrMean),]
 
-ggplot(ratiorankcorrfffs,aes(x=Featureidx<-c(1:2177),y=RatioTrMean,colour=as.factor(FeatureIdx)))+
+scurve<-ggplot(ratiorankcorrfffs,aes(x=Featureidx<-c(1:2177),y=RatioTrMean,colour=as.factor(FeatureIdx)))+
   geom_point(show_guide = FALSE)+ geom_hline(yintercept = mean(ratiorankcorrn$Ratio), color = "red")+
+  geom_hline(yintercept = mean(ratiorankcorr$Ratio), color = "blue")+
   ggtitle("Rattio of ICAm positive cells per topounit/calculated from Mean")
+scurve
+plot_top <- ggplot(ratiorankcorrfffs, aes(RatioTrMean,fill="yellow")) + 
+  geom_density(alpha=.5) + 
+  theme(legend.position = "none") 
+fordensplot<-rbind(data.frame(Intensity=ratiorankcorrn$Ratio,Sample="Negative"),
+                   data.frame(Intensity=ratiorankcorr$Ratio,Sample="Topogra"))
+plot_right <- ggplot(ratiorankcorrfffs, aes(RatioTrMean,fill="yellow")) + 
+  geom_density(alpha=.5) + 
+  coord_flip() + 
+  theme(legend.position = "none")
+empt <- ggplot()+geom_point(aes(1,1), colour="white") +
+  theme(                              
+    plot.background = element_blank(), 
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank(), 
+    panel.border = element_blank(), 
+    panel.background = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank()
+  )
+library(gridExtra)
+grid.arrange(plot_top, empt, scurve, plot_right, ncol=2, nrow=2, widths=c(4, 1), heights=c(1, 4))
 
+##calculate if mean icam significantly different between topography  and negative control
+
+wilcox.test(ratiorankcorr$Ratio,ratiorankcorrn$Ratio, correct=F)
+##median of topo=0, not suprisingly that u-test is very significant
+##t-test is more applicable
+t.test(ratiorankcorr$Ratio,ratiorankcorrn$Ratio)
+
+##thes same plot but with absolute ratio
+ratiorankcorrfffsa<-ratiorankcorrfff[order(ratiorankcorrfff$RatioAbs),]
+
+ggplot(ratiorankcorrfffsa,aes(x=Featureidx<-c(1:2177),y=RatioAbs,colour=as.factor(FeatureIdx)))+
+  geom_point(show_guide = FALSE)+ geom_hline(yintercept = mean(ratiorankcorrn$Ratio), color = "red")+
+  geom_hline(yintercept = mean(ratiorankcorr$Ratio), color = "blue")+
+  ggtitle("Rattio of ICAm positive cells per topounit/calculated from Mean")
+##correlation between absolute Ratio and mean ratio
+ggplot(ratiorankcorrfff, aes(x=RatioTrMean,y=RatioAbs,colour=as.factor(FeatureIdx)))+
+  geom_smooth(method = "lm", colour = "grey50", fill = "grey50") + 
+  geom_point(show_guide = FALSE) 
+  
+  
+cor(ratiorankcorrfff$RatioTrMean,ratiorankcorrfff$RatioAbs)
+
+##plots with intensities
 ggplot(ratiorankcorrfffs,aes(x=Featureidx<-c(1:2177),y=IntensTrMean,colour=as.factor(FeatureIdx)))+
   geom_point(show_guide = FALSE)+ geom_hline(yintercept = mean(ratiorankcorrn$TrMeanIcam), color = "red")+
   ggtitle("ICAM Intensities  per topounit/sorted by persentage of positive")
@@ -180,15 +234,44 @@ ratiorankcorrfffsi<-ratiorankcorrfff[order(ratiorankcorrfff$IntensTrMean),]
 
 ggplot(ratiorankcorrfffsi,aes(x=Featureidx<-c(1:2177),y=IntensTrMean,colour=as.factor(FeatureIdx)))+
   geom_point(show_guide = FALSE)+ geom_hline(yintercept = mean(ratiorankcorrn$TrMeanIcam), color = "red")+
+  geom_hline(yintercept = mean(ratiorankcorr$TrMeanIcam), color = "blue")+
   ggtitle("ICAM Intensities  per topounit/sorted by mean intensity")
+ggplot(ratiorankcorrfffsi,aes(IntensTrMean,fill="yellow"))+geom_density(alpha=.5)
+
+###so the same with actin to show that Icam upregulation is not random
 
 
 
+##Actin analysis
 
+#count number of postitive cells, with ICAm expression higher then treshhold
+
+top_inta_data.median<-perobindall.cor[perobindall.cor$Image_Metadata_array<9,
+                                     c("Cell_Intensity_MedianIntensity_Actin1amask_Nor_corr","ImageNumber","FeatureIdx")]
+neg_int_data.median<-perobindall.cor[perobindall.cor$Image_Metadata_array==10,
+                                     c("Cell_Intensity_MedianIntensity_Actin1amask_Nor_corr","ImageNumber","FeatureIdx")]
+library(plyr)
+ratiorankcorra<-ddply(top_inta_data.median,"ImageNumber", summarise, 
+                     TrMeanActin=mean(Cell_Intensity_MedianIntensity_Actin1amask_Nor_corr, trimm=0.3),
+                     FeatureIdx=unique(FeatureIdx))
+
+ratiorankcorran<-ddply(neg_int_data.median,"ImageNumber", summarise, 
+                      TrMeanActin=mean(Cell_Intensity_MedianIntensity_Actin1amask_Nor_corr, trimm=0.3),
+                      FeatureIdx=unique(FeatureIdx))
+#collapse to feaature nuber
+ratiorankcorrafff<-ddply(na.omit(ratiorankcorra),"FeatureIdx", summarise, 
+                        IntensTrMean=mean(TrMeanActin),
+                        IntensTrMad=mad(TrMeanActin))
+ratiorankcorrafffsi<-ratiorankcorrafff[order(ratiorankcorrafff$IntensTrMean),]
+ggplot(ratiorankcorrafffsi,aes(x=Featureidx<-c(1:2177),y=IntensTrMean,colour=as.factor(FeatureIdx)))+
+  geom_point(show_guide = FALSE)+ geom_hline(yintercept = mean(ratiorankcorran$TrMeanActin), color = "red")+
+  geom_hline(yintercept = mean(ratiorankcorra$TrMeanActin), color = "blue")+
+  ggtitle("Actin Intensities  per topounit/sorted by mean intensity")
+ggplot(ratiorankcorrafffsi,aes(IntensTrMean,fill="yellow"))+geom_density(alpha=.5)
+  
 #############################################
 
 
-#stopped here
 #calculating statistics
 for (i in 1:length(unique(ratiorankcorrfff[,"FeatureIdx"]))){ 
   temp <- ratiorankcorr[ratiorankcorr$FeatureIdx==ratiorankcorrfff[i,"FeatureIdx"],]
