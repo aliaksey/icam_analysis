@@ -4,79 +4,150 @@ load("Icam_cells_after_correction.RDATA")
 #find treshhold factor
 library(ggplot2)
 library(reshape2)
-forggplot<-perobindall.cor[perobindall.cor$Image_Metadata_array>8,c("Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr",
-                                                          "Image_Metadata_array")]
-p1<-ggplot(forggplot, aes(Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr, fill = as.factor(forggplot$Image_Metadata_array))) 
-p1+geom_density(alpha = 0.2)
-
-p2<-ggplot(perobindall.cor, aes(Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr, fill = as.factor(perobindall.cor$Image_Metadata_array))) 
-p2+geom_density(alpha = 0.2)
-
-top_int_data<-perobindall.cor[perobindall.cor$Image_Metadata_array<9,"Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr"]
+#based on mean
+top_int_data.mean<-perobindall.cor[perobindall.cor$Image_Metadata_array<9,"Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr"]
 pos_int_data<-perobindall.cor[perobindall.cor$Image_Metadata_array==9,"Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr"]
 neg_int_data<-perobindall.cor[perobindall.cor$Image_Metadata_array==10,"Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr"]
-
 lower.limit <- 1
 upper.limit <- 50
-
 neg.density <- density(neg_int_data, from = lower.limit, to = upper.limit, n = max(length(neg_int_data),
                                                                                    length(pos_int_data)))
 pos.density <- density(pos_int_data, from = lower.limit, to = upper.limit, n = max(length(neg_int_data),
                                                                                    length(pos_int_data)))
+density.difference <- neg.density$y - pos.density$y
+intersection.point.mean <- neg.density$x[which(diff(density.difference > 0) != 0) + 1]
 
+combined<-perobindall.cor[perobindall.cor$Image_Metadata_array>8,c("Image_Metadata_array",
+                  "Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr")]
+ggplot(combined, aes(Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr, fill =as.factor(Image_Metadata_array))) +
+  geom_density(alpha = 0.2) + 
+  geom_vline(xintercept = intersection.point.mean, color = "red")
+#based on median
+top_int_data.median<-perobindall.cor[perobindall.cor$Image_Metadata_array<9,"Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr"]
+pos_int_data<-perobindall.cor[perobindall.cor$Image_Metadata_array==9,"Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr"]
+neg_int_data<-perobindall.cor[perobindall.cor$Image_Metadata_array==10,"Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr"]
+lower.limit <- 1
+upper.limit <- 50
+neg.density <- density(neg_int_data, from = lower.limit, to = upper.limit, n = max(length(neg_int_data),
+                                                                                   length(pos_int_data)))
+pos.density <- density(pos_int_data, from = lower.limit, to = upper.limit, n = max(length(neg_int_data),
+                                                                                   length(pos_int_data)))
+density.difference <- neg.density$y - pos.density$y
+intersection.point <- neg.density$x[which(diff(density.difference > 0) != 0) + 1]
+intersection.point.median<-max(intersection.point)
+
+combined<-perobindall.cor[perobindall.cor$Image_Metadata_array>8,c("Image_Metadata_array",
+                                                                   "Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr")]
+ggplot(combined, aes(Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr, fill =as.factor(Image_Metadata_array))) +
+  geom_density(alpha = 0.2) + 
+  geom_vline(xintercept = intersection.point.median, color = "red")
+#based on integrated
+top_int_data<-perobindall.cor[perobindall.cor$Image_Metadata_array<9,"Cell_Intensity_IntegratedIntensity_Icam1amask_Nor_corr"]
+pos_int_data<-perobindall.cor[perobindall.cor$Image_Metadata_array==9,"Cell_Intensity_IntegratedIntensity_Icam1amask_Nor_corr"]
+neg_int_data<-perobindall.cor[perobindall.cor$Image_Metadata_array==10,"Cell_Intensity_IntegratedIntensity_Icam1amask_Nor_corr"]
+lower.limit <- 1
+upper.limit <- 500000
+neg.density <- density(neg_int_data, from = lower.limit, to = upper.limit, n = max(length(neg_int_data),
+                                                                                   length(pos_int_data)))
+pos.density <- density(pos_int_data, from = lower.limit, to = upper.limit, n = max(length(neg_int_data),
+                                                                                   length(pos_int_data)))
 density.difference <- neg.density$y - pos.density$y
 intersection.point <- neg.density$x[which(diff(density.difference > 0) != 0) + 1]
 
 combined<-perobindall.cor[perobindall.cor$Image_Metadata_array>8,c("Image_Metadata_array",
-                  "Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr")]
-
-
-ggplot(combined, aes(Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr, fill =as.factor(Image_Metadata_array))) +
+                                                                   "Cell_Intensity_IntegratedIntensity_Icam1amask_Nor_corr")]
+ggplot(combined, aes(Cell_Intensity_IntegratedIntensity_Icam1amask_Nor_corr, fill =as.factor(Image_Metadata_array))) +
   geom_density(alpha = 0.2) + 
   geom_vline(xintercept = intersection.point, color = "red")
+#based on mean non corrected
+top_int_data<-perobindall.cor[perobindall.cor$Image_Metadata_array<9,"Cell_Intensity_MeanIntensity_Icam1amask"]
+pos_int_data<-perobindall.cor[perobindall.cor$Image_Metadata_array==9,"Cell_Intensity_MeanIntensity_Icam1amask"]
+neg_int_data<-perobindall.cor[perobindall.cor$Image_Metadata_array==10,"Cell_Intensity_MeanIntensity_Icam1amask"]
+lower.limit <- 0.3
+upper.limit <- 0.5
+neg.density <- density(neg_int_data, from = lower.limit, to = upper.limit, n = max(length(neg_int_data),
+                                                                                   length(pos_int_data)))
+pos.density <- density(pos_int_data, from = lower.limit, to = upper.limit, n = max(length(neg_int_data),
+                                                                                   length(pos_int_data)))
+density.difference <- neg.density$y - pos.density$y
+intersection.point <- neg.density$x[which(diff(density.difference > 0) != 0) + 1]
+
+combined<-perobindall.cor[perobindall.cor$Image_Metadata_array>8,c("Image_Metadata_array",
+                                                                   "Cell_Intensity_MeanIntensity_Icam1amask")]
+ggplot(combined, aes(Cell_Intensity_MeanIntensity_Icam1amask, fill =as.factor(Image_Metadata_array))) +
+  geom_density(alpha = 0.2) + 
+  geom_vline(xintercept = intersection.point, color = "red")
+#based on mean non corrected only min subtracted
+top_int_data<-perobindall.cor[perobindall.cor$Image_Metadata_array<9,"Cell_Intensity_MeanIntensity_Icam1amask_Nor"]
+pos_int_data<-perobindall.cor[perobindall.cor$Image_Metadata_array==9,"Cell_Intensity_MeanIntensity_Icam1amask_Nor"]
+neg_int_data<-perobindall.cor[perobindall.cor$Image_Metadata_array==10,"Cell_Intensity_MeanIntensity_Icam1amask_Nor"]
+lower.limit <- 0.02
+upper.limit <- 0.1
+neg.density <- density(neg_int_data, from = lower.limit, to = upper.limit, n = max(length(neg_int_data),
+                                                                                   length(pos_int_data)))
+pos.density <- density(pos_int_data, from = lower.limit, to = upper.limit, n = max(length(neg_int_data),
+                                                                                   length(pos_int_data)))
+density.difference <- neg.density$y - pos.density$y
+intersection.point <- neg.density$x[which(diff(density.difference > 0) != 0) + 1]
+
+combined<-perobindall.cor[perobindall.cor$Image_Metadata_array>8,c("Image_Metadata_array",
+                                                                   "Cell_Intensity_MeanIntensity_Icam1amask_Nor")]
+ggplot(combined, aes(Cell_Intensity_MeanIntensity_Icam1amask_Nor, fill =as.factor(Image_Metadata_array))) +
+  geom_density(alpha = 0.2) + 
+  geom_vline(xintercept = intersection.point, color = "red")
+###########################################
+###finding treshhold based on Topochip data
+int_data.topochip<-perobindall.cor[perobindall.cor$Image_Metadata_array<12,
+      c("Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr","Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr",
+        "Image_Metadata_array")]
+library(reshape2)
+int_data.topochip.melt<-melt(int_data.topochip,measure.vars =c("Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr",
+#mean                                                               "Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr"))
+ggplot(int_data.topochip.melt, aes(as.factor(variable),y=value,fill=as.factor(Image_Metadata_array))) + 
+  geom_boxplot()+ scale_y_log10()+ geom_hline(yintercept = intersection.point.mean, color = "red")+
+  ggtitle("Mean Icam expression")
+
+ggplot(int_data.topochip.melt[int_data.topochip.melt$value>intersection.point.mean,], aes(as.factor(variable),y=value,fill=as.factor(Image_Metadata_array))) + 
+  geom_boxplot()+ scale_y_log10()+ geom_hline(yintercept = intersection.point.mean, color = "red")+
+  ggtitle("Mean Icam expression after treshhold")
+#median
+ggplot(int_data.topochip.melt, aes(as.factor(variable),y=value,fill=as.factor(Image_Metadata_array))) + 
+  geom_boxplot()+ scale_y_log10()+ geom_hline(yintercept = intersection.point.median, color = "red")+
+  ggtitle("Median Icam expression")
+
+ggplot(int_data.topochip.melt[int_data.topochip.melt$value>intersection.point.median,], aes(as.factor(variable),y=value,fill=as.factor(Image_Metadata_array))) + 
+  geom_boxplot()+ scale_y_log10()+ geom_hline(yintercept = intersection.point.median, color = "red")+
+  ggtitle("Median Icam expression after treshhold")
 
 
 
-##find point of intersection
-unique(intersect(neg_int_data, pos_int_data))
-
-neg_int_data[abs(neg_int_data-pos_int_data) < 0.00001 && neg_int_dataneg_int_data < 1000 && neg_int_data > 500]
-
-hist(perobindall.cor[perobindall.cor$Image_Metadata_array>8,"Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr"])
-dd<-density(perobindall.cor[perobindall.cor$Image_Metadata_array>8,"Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr"])
-plot(dd)
-
-boxplot(perobindall.cor[perobindall.cor$Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr > 10,
-                   "Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr"]~
-          perobindall.cor[perobindall.cor$Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr > 10, "Image_Metadata_array"])
 ###############################################################
 #################################################################
 #count number of postitive cells
 
-perobindall.cort<-perobindall.cor[perobindall.cor$Image_Metadata_array<9,]
-perobindall.corp<-perobindall.cor[perobindall.cor$Image_Metadata_array==9,]
-perobindall.corn<-perobindall.cor[perobindall.cor$Image_Metadata_array==10,]
-#making some plots
-plot(perobindall.corn$Cell_Intensity_MeanIntensity_Actin1amask_Nor_corr,
-     perobindall.corn$Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr)
+top_int_data.median<-perobindall.cor[perobindall.cor$Image_Metadata_array<9,
+      c("Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr","ImageNumber","FeatureIdx")]
+
+neg_int_data.median<-perobindall.cor[perobindall.cor$Image_Metadata_array==10,
+                                     c("Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr","ImageNumber","FeatureIdx")]
+
+
 
 library(plyr)
-ratiorankcorr<-ddply(perobindall.cort,"ImageNumber", summarise, 
-                     IcamPositive=sum(Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr > 10),
-                     Total=sum(Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr > 0),
-                     TrMeanIcam=mean(Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr, trimm=0.3),
-                     FeatureIdx=mean(FeatureIdx))
+ratiorankcorr<-ddply(top_int_data.median,"ImageNumber", summarise, 
+                     IcamPositive=sum(Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr > intersection.point.median),
+                     Total=sum(Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr > 0),
+                     TrMeanIcam=mean(Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr, trimm=0.3),
+                     FeatureIdx=unique(FeatureIdx))
 
-ratiorankcorrn<-ddply(perobindall.corn,"ImageNumber", summarise, 
-                      IcamPositive=sum(Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr > 10),
-                      Total=sum(Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr > 0),
-                      TrMeanIcam=mean(Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr, trimm=0.3),
-                      FeatureIdx=mean(FeatureIdx))
-#plot(ratiorankcorr$IcamPositive~ratiorankcorr$FeatureIdx)
-
+ratiorankcorrn<-ddply(neg_int_data.median,"ImageNumber", summarise, 
+                      IcamPositive=sum(Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr > intersection.point.median),
+                      Total=sum(Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr > 0),
+                      TrMeanIcam=mean(Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr, trimm=0.3),
+                      FeatureIdx=unique(FeatureIdx))
 ratiorankcorr$Ratio<-ratiorankcorr$IcamPositive/ratiorankcorr$Total
 
-plot(ratiorankcorr$Ratio,ratiorankcorr$TrMeanIcam)
+ggplot(ratiorankcorr,aes(x=Ratio,y=TrMeanIcam,colour=as.factor(FeatureIdx)))+geom_point(show_guide = FALSE)
 
 #collapse to feaature nuber
 ratiorankcorrfff<-ddply(na.omit(ratiorankcorr),"FeatureIdx", summarise, 
@@ -89,7 +160,8 @@ ratiorankcorrfff<-ddply(na.omit(ratiorankcorr),"FeatureIdx", summarise,
 
 ratiorankcorrfffs<-ratiorankcorrfff[order(ratiorankcorrfff$RatioTrMean),]
 
-plot(ratiorankcorrfffs$RatioTrMean)
+ggplot(ratiorankcorrfffs,aes(x=c(1:2177),y=RatioTrMean,colour=as.factor(FeatureIdx)))+geom_point(show_guide = FALSE)
+#stopped here
 #calculating statistics
 for (i in 1:length(unique(ratiorankcorrfff[,"FeatureIdx"]))){ 
   temp <- ratiorankcorr[ratiorankcorr$FeatureIdx==ratiorankcorrfff[i,"FeatureIdx"],]
