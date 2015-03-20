@@ -246,16 +246,16 @@ ggplot(ratiorankcorrfffsi,aes(IntensTrMean,fill="yellow"))+geom_density(alpha=.5
 
 #count number of postitive cells, with ICAm expression higher then treshhold
 
-top_inta_data.median<-perobindall.cor[perobindall.cor$Image_Metadata_array<9,
+topa_inta_data.median<-perobindall.cor[perobindall.cor$Image_Metadata_array<9,
                                      c("Cell_Intensity_MedianIntensity_Actin1amask_Nor_corr","ImageNumber","FeatureIdx")]
-neg_int_data.median<-perobindall.cor[perobindall.cor$Image_Metadata_array==10,
+neg_inta_data.median<-perobindall.cor[perobindall.cor$Image_Metadata_array==10,
                                      c("Cell_Intensity_MedianIntensity_Actin1amask_Nor_corr","ImageNumber","FeatureIdx")]
 library(plyr)
 ratiorankcorra<-ddply(top_inta_data.median,"ImageNumber", summarise, 
                      TrMeanActin=mean(Cell_Intensity_MedianIntensity_Actin1amask_Nor_corr, trimm=0.3),
                      FeatureIdx=unique(FeatureIdx))
 
-ratiorankcorran<-ddply(neg_int_data.median,"ImageNumber", summarise, 
+ratiorankcorran<-ddply(neg_inta_data.median,"ImageNumber", summarise, 
                       TrMeanActin=mean(Cell_Intensity_MedianIntensity_Actin1amask_Nor_corr, trimm=0.3),
                       FeatureIdx=unique(FeatureIdx))
 #collapse to feaature nuber
@@ -271,14 +271,13 @@ ggplot(ratiorankcorrafffsi,aes(IntensTrMean,fill="yellow"))+geom_density(alpha=.
   
 #############################################
 
-
 #calculating statistics
 for (i in 1:length(unique(ratiorankcorrfff[,"FeatureIdx"]))){ 
   temp <- ratiorankcorr[ratiorankcorr$FeatureIdx==ratiorankcorrfff[i,"FeatureIdx"],]
   #temp2<-perobindallfnt[perobindallfnt$FeatureIdx==collobfeat[i,"FeatureIdx"],]
   obs<-c(sum(temp[,"IcamPositive"]),(sum(temp[,"Total"])-sum(temp[,"IcamPositive"])))
-  exp<-c(sum(perobindall.corn$Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr >10)/length(perobindall.corn$Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr),
-         sum(perobindall.corn$Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr<10)/length(perobindall.corn$Cell_Intensity_MeanIntensity_Icam1amask_Nor_corr))
+  exp<-c(sum(neg_int_data.median$Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr >intersection.point.median)/nrow(neg_int_data.median),
+         sum(neg_int_data.median$Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr<intersection.point.median)/nrow(neg_int_data.median))
   pva<-chisq.test(obs,p=exp)
   #wilcox.test(temp[,"IcamIntensityMt"],collob[,"IcamIntensityMt"] )
   #pvak<-kruskal.test(Cell_Intensity_MedianIntensity_Icam1amask~ImageNumber,data=temp2)
