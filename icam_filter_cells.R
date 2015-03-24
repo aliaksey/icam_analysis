@@ -25,9 +25,17 @@ cell.area.f<-c()
 # library(parallel)
 # cl <- makeCluster(4)
 # registerDoParallel(cl)
-
+library(plyr)
 for(i in unique(cell.area[,"FeatureIdx"])){
   temp2<-cell.area[cell.area$FeatureIdx==i,]
+  ###filter based on cell number
+  temp.count<-ddply(temp2,"ImageNumber",summarise,
+                    Count=length(ObjectNumber))
+  lbndn<-as.numeric(quantile(temp.count$Count, probs = 0.25))
+  ubndn<-as.numeric(quantile(temp.count$Count, probs = 0.75))
+  iudn<-ubndn-lbndn
+  count.passed<-temp.count[temp.count$Count<(ubndn+1.5*iudn)&temp.count$Count>(lbndn-1.5*iudn),"ImageNumber"]
+  temp2<-temp2[temp2$ImageNumber%in%count.passed,]
   ###filter based on cell area   
   lbnda<-as.numeric(quantile(temp2[,"Cell_AreaShape_Area"], probs = 0.25))
   ubnda<-as.numeric(quantile(temp2[,"Cell_AreaShape_Area"], probs = 0.75))
@@ -77,9 +85,14 @@ for(i in unique(cell.area[,"FeatureIdx"])){
                     row.names(temp2) %in% row.names(rsltpn),]
   cell.area.f<-rbind(cell.area.f,arpr.ftr) 
 }
+
 # stopCluster(cl)
 # rm(cl)
 cell.area.f<-as.data.frame(cell.area.f)
+##plotting cell number before afetr
+hist(cell.area$ObjectNumber)
+hist(cell.area.f$ObjectNumber)
+
 cell.area.f$ID<-paste(cell.area.f$ImageNumber,cell.area.f$ObjectNumber,sep="_")
 ##joining filtering results with a data
 perobindall.cor$ID<-paste(perobindall.cor$ImageNumber,perobindall.cor$ObjectNumber,sep="_")

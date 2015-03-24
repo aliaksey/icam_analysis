@@ -151,6 +151,10 @@ ratiorankcorrn<-ddply(neg_int_data.median,"ImageNumber", summarise,
 ratiorankcorr$Ratio<-ratiorankcorr$IcamPositive/ratiorankcorr$Total
 ratiorankcorrn$Ratio<-ratiorankcorrn$IcamPositive/ratiorankcorrn$Total
 
+##show number of cells per repeat
+hist(ratiorankcorr$Total)
+
+
 ggplot(ratiorankcorr,aes(x=Ratio,y=TrMeanIcam,colour=as.factor(FeatureIdx)))+geom_point(show_guide = FALSE)
 
 #collapse to feaature nuber
@@ -178,6 +182,18 @@ scurve<-ggplot(ratiorankcorrfffs,aes(x=Featureidx<-c(1:2177),y=RatioTrMean,colou
   geom_hline(yintercept = mean(ratiorankcorr$Ratio), color = "blue")+
   ggtitle("Rattio of ICAm positive cells per topounit/calculated from Mean")
 scurve
+##scurve +error
+library(reshape2)
+ratiorankcorr.s<-merge(ratiorankcorrfffs,ratiorankcorr,sort=F)
+ratiorankcorr_scurve.tr <- transform(ratiorankcorr.s[,c("FeatureIdx", "Ratio") ], FeatureIdx = factor(FeatureIdx,
+levels = unique(as.character(ratiorankcorr.s$FeatureIdx))))
+ratiorankcorr_scurve<-melt(ratiorankcorr_scurve.tr, measure.vars ="Ratio")
+
+ggplot(ratiorankcorr_scurve,aes(FeatureIdx,value))+
+  geom_point()+ylim(0,0.2)+
+geom_smooth(aes(group=1), method="lm")
+  
+
 plot_top <- ggplot(ratiorankcorrfffs, aes(RatioTrMean,fill="yellow")) + 
   geom_density(alpha=.5) + 
   theme(legend.position = "none") 
@@ -390,7 +406,7 @@ mathits<-c(11,42,46,109,229,689,494,1050,1147,2114,1673,
            2150,443,864,1908,2075852,1106,330,1101, 917,991,1901,398,1108,2108,1018)
 frhits<-c(11,1147,1050,494,1018,229,1673,2114,2150,864,443,389,46,42)
 test<-c(1559,201,255,74,983,456)
-intersect(as.numeric(topwellsurf$FeatureIdx),c(bottomicam$FeatureIdx, topicam$FeatureIdx))
+#intersect(as.numeric(topwellsurf$FeatureIdx),c(bottomicam$FeatureIdx, topicam$FeatureIdx))
 intersect(mathits,c(bottomicam$FeatureIdx, topicam$FeatureIdx))
 intersect(frhits,c(bottomicam$FeatureIdx, topicam$FeatureIdx))
 intersect(test,c(bottomicam$FeatureIdx, topicam$FeatureIdx))
