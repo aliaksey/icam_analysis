@@ -182,6 +182,9 @@ plot(rankration$IcamIntensityMeanmed_Nor_corr)
 
 bottomicam<-head(rankration, n=20)
 topicam<-tail(rankration, n=20)
+
+save(bottomicam,topicam,file="hit's based on icam intensities.RDATA")
+
 topicamm<-merge(topicam,icamintim, by="FeatureIdx", sort=F)
 bottomicamm<-merge(bottomicam,icamintim, by="FeatureIdx", sort=F)
 
@@ -223,6 +226,7 @@ plot(rankration$IcamIntensityMeanmed_Nor_corr_norm)
 
 bottomicam<-head(rankration, n=20)
 topicam<-tail(rankration, n=20)
+save(bottomicam,topicam,file="hit's based on normolized icam intensities.RDATA")
 topicamm<-merge(topicam,icamintim, by="FeatureIdx", sort=F)
 bottomicamm<-merge(bottomicam,icamintim, by="FeatureIdx", sort=F)
 
@@ -258,6 +262,7 @@ plot(rankration$IcamIntensityMeanint_Nor_corr)
 
 bottomicam<-head(rankration, n=20)
 topicam<-tail(rankration, n=20)
+save(bottomicam,topicam,file="hit's based on icam integrated intensities.RDATA")
 topicamm<-merge(topicam,icamintim, by="FeatureIdx", sort=F)
 bottomicamm<-merge(bottomicam,icamintim, by="FeatureIdx", sort=F)
 

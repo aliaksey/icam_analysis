@@ -4,3 +4,7 @@ source("icam_load_data_filter_in_focus.R")
 source("icam_filter_cells.R")
 ##correct for intensities in different repeats
 source("icam_correct_for_intensity_in_different_repeats.R")
+##find hits based on treshhold intensity value
+source("icam_analysis_frequences.R")
+##find hits based on intensity value
+source("icam_analysis_intensities.R")
