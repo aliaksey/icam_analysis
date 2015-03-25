@@ -25,6 +25,8 @@ cell.area.f<-c()
 # library(parallel)
 # cl <- makeCluster(4)
 # registerDoParallel(cl)
+x<-unique(cell.area[,"FeatureIdx"])
+plot(sort(x))
 library(plyr)
 for(i in unique(cell.area[,"FeatureIdx"])){
   temp2<-cell.area[cell.area$FeatureIdx==i,]
@@ -134,6 +136,15 @@ cell.area.f.c<-c()
 # registerDoParallel(cl)
 for(i in unique(cell.area.c[,"CONID" ])){
   temp2<-cell.area.c[cell.area.c$CONID==i,]
+  ###filter based on cell number
+  temp.count<-ddply(temp2,"ImageNumber",summarise,
+                    Count=length(ObjectNumber))
+  lbndn<-as.numeric(quantile(temp.count$Count, probs = 0.25))
+  ubndn<-as.numeric(quantile(temp.count$Count, probs = 0.75))
+  iudn<-ubndn-lbndn
+  count.passed<-temp.count[temp.count$Count<(ubndn+1.5*iudn)&temp.count$Count>(lbndn-1.5*iudn),"ImageNumber"]
+  temp2<-temp2[temp2$ImageNumber%in%count.passed,]
+  
   ###filter based on cell area   
   lbnda<-as.numeric(quantile(temp2[,"Cell_AreaShape_Area"], probs = 0.25))
   ubnda<-as.numeric(quantile(temp2[,"Cell_AreaShape_Area"], probs = 0.75))

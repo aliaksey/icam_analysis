@@ -140,19 +140,19 @@ library(plyr)
 ratiorankcorr<-ddply(top_int_data.median,"ImageNumber", summarise, 
                      IcamPositive=sum(Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr > intersection.point.median),
                      Total=sum(Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr > 0),
-                     TrMeanIcam=mean(Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr, trimm=0.15),
+                     TrMeanIcam=mean(Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr, trimm=0.2),
                      FeatureIdx=unique(FeatureIdx))
 
 ratiorankcorrn<-ddply(neg_int_data.median,"ImageNumber", summarise, 
                       IcamPositive=sum(Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr > intersection.point.median),
                       Total=sum(Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr > 0),
-                      TrMeanIcam=mean(Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr, trimm=0.15),
+                      TrMeanIcam=mean(Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr, trimm=0.2),
                       FeatureIdx=unique(FeatureIdx))
 ratiorankcorr$Ratio<-ratiorankcorr$IcamPositive/ratiorankcorr$Total
 ratiorankcorrn$Ratio<-ratiorankcorrn$IcamPositive/ratiorankcorrn$Total
 
 ##show number of cells per repeat
-hist(ratiorankcorr$Total)
+median(ratiorankcorr$Total)
 
 
 ggplot(ratiorankcorr,aes(x=Ratio,y=TrMeanIcam,colour=as.factor(FeatureIdx)))+geom_point(show_guide = FALSE)
@@ -161,9 +161,9 @@ ggplot(ratiorankcorr,aes(x=Ratio,y=TrMeanIcam,colour=as.factor(FeatureIdx)))+geo
 ratiorankcorrfff<-ddply(na.omit(ratiorankcorr),"FeatureIdx", summarise, 
                         IcamPos=sum(IcamPositive),
                         Totalc=sum(Total),
-                        RatioTrMean=mean(Ratio),
+                        RatioTrMean=mean(Ratio,trimm=0.2),
                         RatioMedian=median(Ratio),
-                        IntensTrMean=mean(TrMeanIcam),
+                        IntensTrMean=mean(TrMeanIcam,trimm=0.2),
                         IntensTrMad=mad(TrMeanIcam),
                         RatioSd=sd(Ratio),
                         RatioMad=mad(Ratio))
@@ -267,11 +267,11 @@ neg_inta_data.median<-perobindall.cor[perobindall.cor$Image_Metadata_array==10,
                                      c("Cell_Intensity_MedianIntensity_Actin1amask_Nor_corr","ImageNumber","FeatureIdx")]
 library(plyr)
 ratiorankcorra<-ddply(topa_inta_data.median,"ImageNumber", summarise, 
-                     TrMeanActin=mean(Cell_Intensity_MedianIntensity_Actin1amask_Nor_corr, trimm=0.3),
+                     TrMeanActin=mean(Cell_Intensity_MedianIntensity_Actin1amask_Nor_corr, trimm=0.2),
                      FeatureIdx=unique(FeatureIdx))
 
 ratiorankcorran<-ddply(neg_inta_data.median,"ImageNumber", summarise, 
-                      TrMeanActin=mean(Cell_Intensity_MedianIntensity_Actin1amask_Nor_corr, trimm=0.3),
+                      TrMeanActin=mean(Cell_Intensity_MedianIntensity_Actin1amask_Nor_corr, trimm=0.2),
                       FeatureIdx=unique(FeatureIdx))
 #collapse to feaature nuber
 ratiorankcorrafff<-ddply(na.omit(ratiorankcorra),"FeatureIdx", summarise, 
@@ -315,7 +315,7 @@ length(ratiorankcorrfff[ratiorankcorrfff$p.value<(0.05/2177),"p.value"])
 ratiorankcorrfff$p.value.adj<-p.adjust(ratiorankcorrfff$p.value, method= "BH")
 ratiorankcorrfff.pv<-ratiorankcorrfff[ratiorankcorrfff$p.value.adj<0.05,]
 rankration<-ratiorankcorrfff.pv[order(ratiorankcorrfff.pv$RatioTrMean,
-                                      ratiorankcorrfff.pv$RatioSd),c("FeatureIdx","RatioTrMean")]
+                                      ratiorankcorrfff.pv$p.value.adj),c("FeatureIdx","RatioTrMean")]
 # count total number of passed surfaces
 nrow(ratiorankcorrfff.pv)
 plot(rankration$RatioTrMean)
@@ -330,9 +330,9 @@ dataicamav<-ddply(perobindall.cor[perobindall.cor$Image_Metadata_array<9,c("Feat
                 "Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr")],"ImageNumber", summarise,
                 FeatureIdx=unique(FeatureIdx),
                 Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr=mean(Cell_Intensity_MedianIntensity_Icam1amask_Nor_corr,
-                                                                         trimm=0.15),
+                                                                         trimm=0.2),
                 Cell_Intensity_MedianIntensity_Actin1amask_Nor_corr=mean(Cell_Intensity_MedianIntensity_Actin1amask_Nor_corr,
-                                                                         trimm=0.15))
+                                                                         trimm=0.2))
 
 topicamm<-merge(topicam,dataicamav, by="FeatureIdx", sort=F)
 bottomicamm<-merge(bottomicam,dataicamav, by="FeatureIdx", sort=F)
