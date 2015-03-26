@@ -29,17 +29,6 @@ icamintim<-ddply(perobindall.cort,"ImageNumber", summarise,
                  IcamIntensityMeanint_Nor=mean(Cell_Intensity_IntegratedIntensity_Icam1amask_Nor,trim=0.2),
                  IcamIntensityMedint_Nor=median(Cell_Intensity_IntegratedIntensity_Icam1amask_Nor),
                  
-                 ## corrected intensity per batch correction
-                 #median
-                 IcamIntensityMeanmed_Nor=mean(Cell_Intensity_MedianIntensity_Icam1amask_Nor,trim=0.2),
-                 IcamIntensityMedmed_Nor=median(Cell_Intensity_MedianIntensity_Icam1amask_Nor),
-                 ##mean
-                 IcamIntensityMeanmean_Nor=mean(Cell_Intensity_MeanIntensity_Icam1amask_Nor,trim=0.2),
-                 IcamIntensityMedmean_Nor=median(Cell_Intensity_MeanIntensity_Icam1amask_Nor),
-                 ##integrated
-                 IcamIntensityMeanint_Nor=mean(Cell_Intensity_IntegratedIntensity_Icam1amask_Nor,trim=0.2),
-                 IcamIntensityMedint_Nor=median(Cell_Intensity_IntegratedIntensity_Icam1amask_Nor),
-                 
                  #Actin
                  ## noncorrected intensity 
                  #median
@@ -61,18 +50,8 @@ icamintim<-ddply(perobindall.cort,"ImageNumber", summarise,
                  ActinIntensityMedmean_Nor=median(Cell_Intensity_MeanIntensity_Actin1amask_Nor),
                  ##integrated
                  ActinIntensityMeanint_Nor=mean(Cell_Intensity_IntegratedIntensity_Actin1amask_Nor,trim=0.2),
-                 ActinIntensityMedint_Nor=median(Cell_Intensity_IntegratedIntensity_Actin1amask_Nor),
-                 
-                 ## corrected intensity per batch correction
-                 #median
-                 ActinIntensityMeanmed_Nor=mean(Cell_Intensity_MedianIntensity_Actin1amask_Nor,trim=0.2),
-                 ActinIntensityMedmed_Nor=median(Cell_Intensity_MedianIntensity_Actin1amask_Nor),
-                 ##mean
-                 ActinIntensityMeanmean_Nor=mean(Cell_Intensity_MeanIntensity_Actin1amask_Nor,trim=0.2),
-                 ActinIntensityMedmean_Nor=median(Cell_Intensity_MeanIntensity_Actin1amask_Nor),
-                 ##integrated
-                 ActinIntensityMeanint_Nor=mean(Cell_Intensity_IntegratedIntensity_Actin1amask_Nor,trim=0.2),
                  ActinIntensityMedint_Nor=median(Cell_Intensity_IntegratedIntensity_Actin1amask_Nor))
+                 
 
 ##calculate the same for negative control
 
@@ -103,18 +82,7 @@ icamintim.neg<-ddply(perobindall.corn,"ImageNumber", summarise,
                      ##integrated
                      IcamIntensityMeanint_Nor=mean(Cell_Intensity_IntegratedIntensity_Icam1amask_Nor,trim=0.2),
                      IcamIntensityMedint_Nor=median(Cell_Intensity_IntegratedIntensity_Icam1amask_Nor),
-                     
-                     ## corrected intensity per batch correction
-                     #median
-                     IcamIntensityMeanmed_Nor=mean(Cell_Intensity_MedianIntensity_Icam1amask_Nor,trim=0.2),
-                     IcamIntensityMedmed_Nor=median(Cell_Intensity_MedianIntensity_Icam1amask_Nor),
-                     ##mean
-                     IcamIntensityMeanmean_Nor=mean(Cell_Intensity_MeanIntensity_Icam1amask_Nor,trim=0.2),
-                     IcamIntensityMedmean_Nor=median(Cell_Intensity_MeanIntensity_Icam1amask_Nor),
-                     ##integrated
-                     IcamIntensityMeanint_Nor=mean(Cell_Intensity_IntegratedIntensity_Icam1amask_Nor,trim=0.2),
-                     IcamIntensityMedint_Nor=median(Cell_Intensity_IntegratedIntensity_Icam1amask_Nor),
-                     
+                                       
                      #Actin
                      ## noncorrected intensity 
                      #median
@@ -136,18 +104,8 @@ icamintim.neg<-ddply(perobindall.corn,"ImageNumber", summarise,
                      ActinIntensityMedmean_Nor=median(Cell_Intensity_MeanIntensity_Actin1amask_Nor),
                      ##integrated
                      ActinIntensityMeanint_Nor=mean(Cell_Intensity_IntegratedIntensity_Actin1amask_Nor,trim=0.2),
-                     ActinIntensityMedint_Nor=median(Cell_Intensity_IntegratedIntensity_Actin1amask_Nor),
-                     
-                     ## corrected intensity per batch correction
-                     #median
-                     ActinIntensityMeanmed_Nor=mean(Cell_Intensity_MedianIntensity_Actin1amask_Nor,trim=0.2),
-                     ActinIntensityMedmed_Nor=median(Cell_Intensity_MedianIntensity_Actin1amask_Nor),
-                     ##mean
-                     ActinIntensityMeanmean_Nor=mean(Cell_Intensity_MeanIntensity_Actin1amask_Nor,trim=0.2),
-                     ActinIntensityMedmean_Nor=median(Cell_Intensity_MeanIntensity_Actin1amask_Nor),
-                     ##integrated
-                     ActinIntensityMeanint_Nor=mean(Cell_Intensity_IntegratedIntensity_Actin1amask_Nor,trim=0.2),
                      ActinIntensityMedint_Nor=median(Cell_Intensity_IntegratedIntensity_Actin1amask_Nor))
+                     
 
 
 # #make pairs plot  
@@ -172,19 +130,19 @@ for (i in unique(icamintft$FeatureIdx)){
 }
 ##select only surfaces that passess p value + correction
 ## BH correction let pass only 2 high Icam intensity surfaces 18 in total
-icamintft$p.value.adj<-p.adjust(icamintft$p.value, method= "none")
+icamintft$p.value.adj<-p.adjust(icamintft$p.value, method= "BH")
 icamintft.pv<-icamintft[icamintft$p.value.adj<0.05,]
 rankration<-icamintft.pv[order(icamintft.pv$IcamIntensityMeanmed_Nor),c("FeatureIdx","IcamIntensityMeanmed_Nor")]
 # count total number of passed surfaces
 nrow(rankration)
 plot(rankration$IcamIntensityMeanmed_Nor)
 
-if(nrow(rankration)>=40) number.surf=20 else 
+if(nrow(rankration)>=40) number.surf=20 else number.surf=round(nrow(rankration)/2)
 
 bottomicam<-head(rankration, n=number.surf)
 topicam<-tail(rankration, n=number.surf)
 
-save(bottomicam,topicam,file="hit's based on icam intensities.RDATA")
+save(bottomicam,topicam,file="hit's based on icam intensities_without_correct.RDATA")
 
 topicamm<-merge(topicam,icamintim, by="FeatureIdx", sort=F)
 bottomicamm<-merge(bottomicam,icamintim, by="FeatureIdx", sort=F)
@@ -196,9 +154,12 @@ forplottransf <- transform(forplotcoll[,c("FeatureIdx", "IcamIntensityMeanmed_No
 library(reshape2)
 forplottransfmelt<-melt(forplottransf, measure.vars =c("IcamIntensityMeanmed_Nor.y",
                                                        "ActinIntensityMeanmed_Nor"))
+# ##multiply by 255
+# forplottransfmelt$value<-forplottransfmelt$value*255
+
 library(ggplot2)
 ggplot(forplottransfmelt, aes(FeatureIdx, y = value, fill=variable))+
-  geom_boxplot()+theme(legend.position="none")
+  geom_boxplot()+theme(legend.position="none")+ylim(0.01,0.045)#+geom_jitter()
 ##Repeat analysis on normolized Icam intensity to actin intensity
 
 
@@ -216,7 +177,7 @@ for (i in unique(icamintft$FeatureIdx)){
 }
 ##select only surfaces that passess p value + correction
 ## BH correction let pass only 2 high Icam intensity surfaces 18 in total
-icamintft$p.value.adj<-p.adjust(icamintft$p.value, method= "none")
+icamintft$p.value.adj<-p.adjust(icamintft$p.value, method= "BH")
 icamintft.pv<-icamintft[icamintft$p.value.adj<0.05,]
 rankration<-icamintft.pv[order(icamintft.pv$IcamIntensityMeanmed_Nor_norm,
                                icamintft.pv$p.value.adj),c("FeatureIdx","IcamIntensityMeanmed_Nor_norm")]
@@ -240,7 +201,7 @@ forplottransfmelt<-melt(forplottransf, measure.vars =c("IcamIntensityMeanmed_Nor
                                                        "ActinIntensityMeanmed_Nor"))
 library(ggplot2)
 ggplot(forplottransfmelt, aes(FeatureIdx, y = value, fill=variable))+
-  geom_boxplot()+theme(legend.position="none")+ylim(0,15)
+  geom_boxplot()+theme(legend.position="none")+ylim(0,0.05)
 
 ##Integrated Intensity
 
@@ -276,4 +237,4 @@ forplottransfmelt<-melt(forplottransf, measure.vars =c("IcamIntensityMeanint_Nor
                                                        "ActinIntensityMeanint_Nor"))
 library(ggplot2)
 ggplot(forplottransfmelt, aes(FeatureIdx, y = value, fill=variable))+
-  geom_boxplot()+theme(legend.position="none")
+  geom_boxplot()+theme(legend.position="none")+ylim(0,600)
