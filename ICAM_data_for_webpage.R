@@ -9,7 +9,7 @@ featureidx2webpage("84 best",84)
 featureidx2webpage("201 high intensity",201)
 
 featureidx2webpage("1652 some zerow",1652)
-
+featureidx2webpage("hits selected by frequncy",forplotcoll.fr)
 
 featureidx2webpage<-function(name, fidx)
 {
@@ -52,7 +52,7 @@ featureidx2webpage<-function(name, fidx)
   ## write all
   cat(formatspec_h1_2,file = htmlfile, append=T)
   perimindallinf<-perimindall[perimindall$ImageNumber%in%perobindall.filter$ImageNumber,]
-  temp2<-perimindallinf[with(perimindallinf, FeatureIdx %in% fidx),]
+  temp2<-perimindallinf[with(perimindallinf, FeatureIdx %in% fidx$FeatureIdx),]
   temp<-temp2[temp2$Image_Metadata_array<9,]
   ##iterate evrything by class
   for  (cc in unique(fidx$Hit)){
@@ -68,12 +68,13 @@ featureidx2webpage<-function(name, fidx)
         array<-paste("/array" ,temppp[i,"Image_Metadata_array"],"/", sep="")
         pth0<-paste("../result3",array, temppp[i,"Image_FileName_Dapi1Orig"],"icam_intensity.png", sep="") 
         pth<-gsub("\\.tif","",pth0)
-        pth01<-paste("../result3",array, temppp[i,"Image_FileName_Dapi1Orig"],"icam_intensity.png", sep="") 
-        pth1<-gsub("\\.tif","",pth0)
+        pth01<-paste("../result3",array, temppp[i,"Image_FileName_Dapi1Orig"],"outlines.png", sep="") 
+        pth1<-gsub("\\.tif","",pth01)
         cat(paste(formatspec_links,pth,formatspec_linke,sep=""),file = htmlfile, append=T);
         cat(paste(formatspec_links,pth1,formatspec_linke,sep=""),file = htmlfile, append=T);
       } 
     }
+  }
     cat(formatspec_end,file = htmlfile, append=T)
   } 
   
