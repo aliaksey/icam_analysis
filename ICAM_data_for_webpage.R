@@ -9,7 +9,7 @@ featureidx2webpage("84 best",84)
 featureidx2webpage("201 high intensity",201)
 
 featureidx2webpage("1652 some zerow",1652)
-featureidx2webpage("hits selected by frequncy",forplotcoll.fr)
+featureidx2webpage("integrated intensity hits",forplotcoll)
 
 featureidx2webpage<-function(name, fidx)
 {

@@ -130,7 +130,7 @@ for (i in unique(icamintft$FeatureIdx)){
 }
 ##select only surfaces that passess p value + correction
 ## BH correction let pass only 2 high Icam intensity surfaces 18 in total
-icamintft$p.value.adj<-p.adjust(icamintft$p.value, method= "BH")
+icamintft$p.value.adj<-p.adjust(icamintft$p.value, method= "none")
 icamintft.pv<-icamintft[icamintft$p.value.adj<0.05,]
 rankration<-icamintft.pv[order(icamintft.pv$IcamIntensityMeanmed_Nor),c("FeatureIdx","IcamIntensityMeanmed_Nor")]
 # count total number of passed surfaces
@@ -142,12 +142,14 @@ if(nrow(rankration)>=40) number.surf=20 else number.surf=round(nrow(rankration)/
 bottomicam<-head(rankration, n=number.surf)
 topicam<-tail(rankration, n=number.surf)
 
-save(bottomicam,topicam,file="hit's based on icam intensities_without_correct.RDATA")
-
 topicamm<-merge(topicam,icamintim, by="FeatureIdx", sort=F)
+topicamm$Hit<-"Top"
 bottomicamm<-merge(bottomicam,icamintim, by="FeatureIdx", sort=F)
-
+bottomicamm$Hit<-"Bottom"
 forplotcoll<-rbind(bottomicamm,topicamm)
+save(forplotcoll,file="hit's based on icam intensities_without_correct.RDATA")
+#save(forplotcoll,file="hit's based on icam intensities_with_correct.RDATA")
+
 forplottransf <- transform(forplotcoll[,c("FeatureIdx", "IcamIntensityMeanmed_Nor.y",
                                           "ActinIntensityMeanmed_Nor") ], FeatureIdx = factor(FeatureIdx, 
                                                                                                    levels = unique(as.character(forplotcoll$FeatureIdx))))
@@ -160,6 +162,9 @@ forplottransfmelt<-melt(forplottransf, measure.vars =c("IcamIntensityMeanmed_Nor
 library(ggplot2)
 ggplot(forplottransfmelt, aes(FeatureIdx, y = value, fill=variable))+
   geom_boxplot()+theme(legend.position="none")+ylim(0.01,0.045)#+geom_jitter()
+#############################################################################
+#########################################################################
+
 ##Repeat analysis on normolized Icam intensity to actin intensity
 
 
@@ -189,8 +194,9 @@ bottomicam<-head(rankration, n=20)
 topicam<-tail(rankration, n=20)
 save(bottomicam,topicam,file="hit's based on normolized icam intensities.RDATA")
 topicamm<-merge(topicam,icamintim, by="FeatureIdx", sort=F)
+topicamm$Hit<-"Top"
 bottomicamm<-merge(bottomicam,icamintim, by="FeatureIdx", sort=F)
-
+bottomicamm$Hit<-"Bottom"
 forplotcoll<-rbind(bottomicamm,topicamm)
 
 forplottransf <- transform(forplotcoll[,c("FeatureIdx", "IcamIntensityMeanmed_Nor",
@@ -223,11 +229,16 @@ plot(rankration$IcamIntensityMeanint_Nor)
 
 bottomicam<-head(rankration, n=20)
 topicam<-tail(rankration, n=20)
-save(bottomicam,topicam,file="hit's based on icam integrated intensities.RDATA")
-topicamm<-merge(topicam,icamintim, by="FeatureIdx", sort=F)
-bottomicamm<-merge(bottomicam,icamintim, by="FeatureIdx", sort=F)
 
+topicamm<-merge(topicam,icamintim, by="FeatureIdx", sort=F)
+topicamm$Hit<-"Top"
+bottomicamm<-merge(bottomicam,icamintim, by="FeatureIdx", sort=F)
+bottomicamm$Hit<-"Bottom"
 forplotcoll<-rbind(bottomicamm,topicamm)
+
+save(forplotcoll,file="hit's based on icam integrated intensities.RDATA")
+
+
 
 forplottransf <- transform(forplotcoll[,c("FeatureIdx", "IcamIntensityMeanint_Nor.y",
                                           "ActinIntensityMeanint_Nor") ], FeatureIdx = factor(FeatureIdx, 
@@ -238,3 +249,38 @@ forplottransfmelt<-melt(forplottransf, measure.vars =c("IcamIntensityMeanint_Nor
 library(ggplot2)
 ggplot(forplottransfmelt, aes(FeatureIdx, y = value, fill=variable))+
   geom_boxplot()+theme(legend.position="none")+ylim(0,600)
+
+###############ribbon ggplot
+##another aproach without outliers
+library(ggplot2)
+library(reshape2)
+icam_intensities.f.stats<-ddply(icamintim,"FeatureIdx", summarise, 
+                                      ymin=boxplot.stats(IcamIntensityMedmed)$stats[1],
+                                      lower=boxplot.stats(IcamIntensityMedmed)$stats[2],
+                                      middle=boxplot.stats(IcamIntensityMedmed)$stats[3],
+                                      upper=boxplot.stats(IcamIntensityMedmed)$stats[4],
+                                      ymax=boxplot.stats(IcamIntensityMedmed)$stats[5])
+##ordering
+icam_intensities.f.stats<-icam_intensities.f.stats[order(icam_intensities.f.stats$middle),]
+icam_intensities.f.stats$FeatureIdx<-factor(icam_intensities.f.stats$FeatureIdx,
+                  levels=as.character(icam_intensities.f.stats$FeatureIdx))
+# create plot with all statistics 
+ggplot(icam_intensities.f.stats, aes(FeatureIdx, 
+                                            lower=lower, upper=upper, middle=middle, ymin=ymin, ymax=ymax)) + 
+  geom_boxplot(stat="identity", fill = "#E69F00",colour = "#0072B2")+
+  geom_point(data=icam_intensities.f.stats, aes(x=c(1:2177),y=middle),
+             colour="red",shape="-")+ylab("Median ICAM Intensity per repeat")
+
+# create plot with all statistics ribbon
+
+ggplot(icam_intensities.f.stats, aes(x=FeatureIdx))+
+  geom_ribbon(data=icam_intensities.f.stats,
+              aes(group = 1,ymin=ymin, ymax=ymax,fill="blue",colour="blue"))+
+  geom_ribbon(data=icam_intensities.f.stats,
+              aes(group = 1,ymin=lower, ymax=upper,fill="yellow",colour="yellow"))+
+  geom_line(data=icam_intensities.f.stats,
+            aes(group = 1,y=middle,colour="red"))+
+  scale_fill_manual(values=c("blue"="blue","yellow"="yellow","red"="red"))+
+  scale_colour_manual(values=c("blue"="blue","yellow"="yellow","red"="red"))+
+  ylab("Median ICAM Intensity per repeat")
+

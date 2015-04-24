@@ -457,6 +457,7 @@ test<-c(1559,201,255,74,983,456)
 intersect(mathits,c(bottomicam$FeatureIdx, topicam$FeatureIdx))
 intersect(frhits,c(bottomicam$FeatureIdx, topicam$FeatureIdx))
 intersect(test,c(bottomicam$FeatureIdx, topicam$FeatureIdx))
+write.table(c(bottomicam$FeatureIdx, topicam$FeatureIdx), "clipboard-128", sep="\t", row.names=FALSE)
 #######
 ##save results
 save(bottomicam,topicam,file="Hitscalculated from frequences with adoptive treshhold .RDATA")
